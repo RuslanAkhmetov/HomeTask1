@@ -7,7 +7,7 @@ import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
 
-    private val taskList = listof(
+    private val taskList = listOf(
         Questions(R.string.task1, false),
         Questions(R.string.task2, false),
         Questions(R.string.task3, false),
@@ -29,12 +29,14 @@ class MainActivity : AppCompatActivity() {
         val taskText :TextView = findViewById(R.id.task_text)
         val doneText :TextView = findViewById(R.id.done_text)
         var index = 0
-        taskText.setText(taskList[index].task)
-        doneText.setText(taskList[index].done.toString())
+        var resId :Int = taskList[index].task
+        taskText.setText(resId)
+        doneText.text = taskList[index].done.toString()
         nextButton.setOnClickListener{
-            taskText.setText(taskList[index].task)
-            doneText.setText(taskList[index].done.toString())
-            index = ++index % taskList.size()
+            resId = taskList[index].task
+            taskText.setText(resId)
+            doneText.text = taskList[index].done.toString()
+            index = ++index % taskList.size
         }
 
     }

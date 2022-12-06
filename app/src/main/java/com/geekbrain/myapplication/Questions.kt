@@ -1,3 +1,5 @@
 package com.geekbrain.myapplication
 
-data class Questions(val question: int, val done: Boolean)
+import androidx.annotation.StringRes
+
+data class Questions(@StringRes val task: Int, val done: Boolean)
