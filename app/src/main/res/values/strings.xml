@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="next">Next</string>
+    <string name="task1">1. Create a new project in Android Studio without Kotlin's support.</string>
+    <string name="task2">2. Configure Kotlin in a new project (preferably manually).</string>
+    <string name="task3">3. Translate Mainactivity to Kotlin.</string>
+    <string name="task4">4. Add the button to markup and hang on it Clicklistener in Activity.</string>
+    <string name="task5">5. To practice creating the classes and functions described in the lesson, and make sure that everything works. For example, create a test application:</string>
+    <string name="taskA">a. Form Data Class with two properties and display them on the application screen.</string>
+    <string name="taskB">B. Create Object. In Object, call Copy and display the values ​​of the copied class on the screen.</string>
+    <string name="taskC">C. Bring the values ​​from different cycles to the console using examples from methodological materials.</string>
+    <string name="task6">6. Study the Yandex API, see examples and register as a developer, get your developer key.</string>
+    <string name="task7">7. To study the API database with films and register as a developer, get your developer key.</string>
+    <string name="task8">8. Decide on the screens and tools of your future application with films based on the capabilities of the API.</string>
+
+</resources>

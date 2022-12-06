@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="next">Дальше</string>
+    <string name="task1">1. Создать новый проект в Android Studio без поддержки Kotlin.</string>
+    <string name="task2">2. Сконфигурировать Kotlin в новом проекте (лучше вручную).</string>
+    <string name="task3">3. Перевести MainActivity на Kotlin.</string>
+    <string name="task4">4. Добавить кнопку в разметку и повесить на неё clickListener в Activity.</string>
+    <string name="task5">5. Потренироваться в создании классов и функций, описанных в уроке, и убедиться, что всё работает. Например, создать тестовое приложение:</string>
+    <string name="taskA">a. Сформировать data class с двумя свойствами и вывести их на экран приложения.</string>
+    <string name="taskB">b. Создать Object. В Object вызвать copy и вывести значения скопированного класса на экран.</string>
+    <string name="taskC">c. Вывести значения из разных циклов в консоль, используя примеры из методических материалов.</string>
+    <string name="task6">6. Изучить API погоды «Яндекса», посмотреть примеры и зарегистрироваться в качестве разработчика, получить свой ключ разработчика.</string>
+    <string name="task7">7. Изучить API базы данных с фильмами и зарегистрироваться в качестве разработчика, получить свой ключ разработчика.</string>
+    <string name="task8">8. Определиться с экранами и инструментарием своего будущего приложения с фильмами на основе возможностей API.</string>
+</resources>
