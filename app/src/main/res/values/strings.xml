@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Home Task 1</string>
     <string name="next">Next</string>
     <string name="task1">1. Create a new project in Android Studio without Kotlins support.</string>
     <string name="task2">2. Configure Kotlin in a new project (preferably manually).</string>
@@ -12,5 +12,8 @@
     <string name="task6">6. Study the Yandex API, see examples and register as a developer, get your developer key.</string>
     <string name="task7">7. To study the API database with films and register as a developer, get your developer key.</string>
     <string name="task8">8. Decide on the screens and tools of your future application with films based on the capabilities of the API.</string>
+    <string name="VIPTask">Very important task</string>
+    <string name="done">Done</string>
+    <string name="in_process">In process</string>
 
 </resources>
