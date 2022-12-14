@@ -2,8 +2,7 @@ package com.geekbrain.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
+import com.geekbrain.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,15 +24,14 @@ class MainActivity : AppCompatActivity() {
 
     var index = 0
 
+    private lateinit var  binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        val nextButton: Button = findViewById(R.id.button_next)
-        val taskText: TextView = findViewById(R.id.task_text)
-        val doneText: TextView = findViewById(R.id.done_text)
-        val vipButton: Button = findViewById(R.id.button_vip)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         if (savedInstanceState == null) {
             index = 0
@@ -42,25 +40,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         var resId: Int = taskList[index].task
-        taskText.setText(resId)
-        doneText.text = taskList[index].done.toString()
+        binding.taskText.setText(resId)
+        binding.doneText.text = taskList[index].done.toString()
 
-        nextButton.setOnClickListener {
+        binding.buttonNext.setOnClickListener {
             index = ++index % taskList.size
             resId = taskList[index].task
-            taskText.setText(resId)
-            doneText.text = convert (taskList[index].done)
+            binding.taskText.setText(resId)
+            binding.doneText.text = convert (taskList[index].done)
             println("Задача ${resources.getString(taskList[index].task)} сделано ${taskList[index].done.toString()}")
         }
 
-        vipButton.setOnClickListener {
-            taskText.setText(vip.get().task)
+        binding.buttonVip.setOnClickListener {
+            binding.taskText.setText(vip.get().task)
             vip.print()
         }
 
-        doneText.setOnClickListener {
+        binding.doneText.setOnClickListener {
             taskList[index].done = !taskList[index].done
-            doneText.text = convert(taskList[index].done)
+            binding.doneText.text = convert(taskList[index].done)
         }
 
     }
