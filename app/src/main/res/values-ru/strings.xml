@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Домашняя работа 1</string>
+    <string name="app_name">Домашняя работа 2</string>
     <string name="next">Дальше</string>
     <string name="task1">1. Создать новый проект в Android Studio без поддержки Kotlin.</string>
     <string name="task2">2. Сконфигурировать Kotlin в новом проекте (лучше вручную).</string>
@@ -13,7 +13,9 @@
     <string name="task6">6. Изучить API погоды «Яндекса», посмотреть примеры и зарегистрироваться в качестве разработчика, получить свой ключ разработчика.</string>
     <string name="task7">7. Изучить API базы данных с фильмами и зарегистрироваться в качестве разработчика, получить свой ключ разработчика.</string>
     <string name="task8">8. Определиться с экранами и инструментарием своего будущего приложения с фильмами на основе возможностей API.</string>
-    <string name="VIPTask">Очень важная задача</string>
+    <string name="VIPTask">Погода</string>
     <string name="done">Сделано</string>
     <string name="in_process">Делается</string>
+    <string name="temperature_label">Температура</string>
+    <string name="feels_like_label">Ощущается</string>
 </resources>

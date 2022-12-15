@@ -2,4 +2,9 @@
 <resources>
     <dimen name="text_size">16sp</dimen>
     <dimen name="layout_margin">16dp</dimen>
+    <dimen name="city_name_margin">12dp</dimen>
+    <dimen name="very_big_text">35sp</dimen>
+    <dimen name="margin_15_dp">15dp</dimen>
+    <dimen name="temperature_value_text_size">25sp</dimen>
+    <dimen name="feels_like_text_size">20sp</dimen>
 </resources>
