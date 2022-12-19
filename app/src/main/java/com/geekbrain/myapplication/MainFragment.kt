@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.geekbrain.myapplication.databinding.FragmentMainBinding
+import com.geekbrain.myapplication.detailes.DetailesFragment
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.viewmodel.AppState
 import com.geekbrain.myapplication.viewmodel.MainViewModel
@@ -35,6 +36,8 @@ class MainFragment : Fragment() {
 
     }
 
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,10 +55,30 @@ class MainFragment : Fragment() {
 
     private val viewModel by viewModels<MainViewModel>()
 
+    private var isDataSetRus: Boolean = true
+
+    private val adapter = MainFragmentAdapter(object : MainFragmentAdapter.OnItemViewClickListener{
+        override fun OnItemClick(weather: Weather) {
+            activity?.supportFragmentManager?.apply {
+                beginTransaction()
+                    .add(R.id.container, DetailesFragment.newInstance(Bundle().apply {
+                        putParcelable(DetailesFragment.BUNDLE_EXTRA, weather)
+                    }))
+                    .addToBackStack("")
+                    .commitAllowingStateLoss()
+            }
+        }
+
+    })
+
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val observer = Observer<AppState> { renderData(it) }
+        binding.mainFragmentRecyclerView.adapter = adapter
+        binding.mainFragmentFAB.setOnClickListener{
+            changeWeatherDataSet()
+        }
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
         viewModel.getWeather()
 
@@ -72,30 +95,45 @@ class MainFragment : Fragment() {
         when(appState) {
             is AppState.Success -> {
                 val weatherData = appState.weatherData
-                binding.loadingLayout.visibility = View.GONE
-                setData(weatherData)
+                binding.mainFragmentLoadingLayout.visibility = View.GONE
+                adapter.setWeather(appState.weatherData)
             }
 
             is AppState.Loading -> {
-                binding.frameLayout.visibility = View.VISIBLE
+                binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
                 Log.i(TAG, "renderData: loading")
             }
 
             is AppState.Error -> {
-                binding.loadingLayout.visibility = View.GONE
-                Snackbar.make(binding.frameLayout, "Error", Snackbar.LENGTH_LONG)
-                    .setAction("Reload") {viewModel.getWeather()}
-                    .show()
+                binding.mainFragmentLoadingLayout.visibility = View.GONE
+                binding.mainFragmentFAB.showSnackbar(
+                    "Error",
+                    "Reload",
+                    {viewModel.getWeather()}
+                )
             }
         }
     }
 
-    private fun setData(weatherData: Weather) {
-        binding.cityName.text = weatherData.city.city
-        binding.cityCoordinates.text = String.format(
-            getString(R.string.city_coordinates), weatherData.city.lat, weatherData.city.lon
-        )
-        binding.temperatureValue.text = weatherData.temperature.toString()
-        binding.feelsLikeValue.text = weatherData.feelsLike.toString()
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun changeWeatherDataSet(){
+        if (isDataSetRus){
+            viewModel.getWeatherFromLocalSourceWorld()
+            binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
+        } else{
+            viewModel.getWeatherFromLocalSourceRus()
+            binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
+        }.also {  isDataSetRus = !isDataSetRus }
     }
+
+    private fun View.showSnackbar(
+        text: String,
+        actionText: String,
+        action: (View) -> Unit,
+        length: Int = Snackbar.LENGTH_INDEFINITE
+    ){
+        Snackbar.make(this, text,length).setAction(actionText, action).show()
+    }
+
+
 }
