@@ -74,8 +74,8 @@ class DetailsFragment : Fragment(){
         with(binding){
             mainView.visibility = View.VISIBLE
             loadingLayout.visibility = View.GONE
-            val city = weatherBundle.city
-            cityName.text = city?.city
+            val city =  weatherBundle.city
+            cityName.text =  weatherDTO.info.url.toString() //city?.city
             cityCoordinates.text = String.format(
                 getString(R.string.city_coordinates),
                 city?.lat.toString(),
@@ -83,10 +83,10 @@ class DetailsFragment : Fragment(){
             )
             weatherCondition.text = weatherDTO.fact?.condition
             temperatureValue.text =weatherDTO.fact?.temp.toString()
-            feelsLikeValue.text = weatherDTO.fact?.feels_like.toString()
-            windSpeedValue.text = weatherDTO.fact?.wind_speed.toString()
-            windDirValue.text = weatherDTO.fact?.wind_dir
-            pressureValue.text = weatherDTO.fact?.pressure_mm.toString()
+            feelsLikeValue.text = weatherDTO.fact?.feelsLike.toString()
+            windSpeedValue.text = weatherDTO.fact?.windSpeed.toString()
+            windDirValue.text = weatherDTO.fact?.windDir
+            pressureValue.text = weatherDTO.fact?.pressureMm.toString()
             humidityValue.text = weatherDTO.fact?.humidity.toString()
             /*forecastDateValue.text = weatherDTO.forecasts[1]?.date
 
