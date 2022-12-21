@@ -1,9 +1,18 @@
 <resources>
-    <string name="app_name">AndroidKotlinApp 3</string>
+    <string name="app_name">AndroidKotlinApp 5</string>
 
-    <string name="temperature_label">Температура</string>
-    <string name="feels_like_label">Ощущается как</string>
+    <string name="temperature_label">Temperature, C</string>
+    <string name="feels_like_label">Feels like</string>
     <string name="city_coordinates">lt/ln: %s, %s"</string>
     <string name="error">Error</string>
     <string name="reload">Reload</string>
+    <string name="wind_speed_label">Wind_speed, m/s</string>
+    <string name="wind_dir_label">Wind direction</string>
+    <string name="pressure_label">Pressure, mm</string>
+    <string name="humidity_label">Humidity %</string>
+    <string name="forecast_date_label">Forecast to</string>
+    <string name="min_temperature_label">Min temetrature, C</string>
+    <string name="max_temperature_label">Maximum Temperature C</string>
+    <string name="morning">Morning</string>
+    <string name="day">Day</string>
 </resources>

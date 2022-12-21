@@ -11,18 +11,13 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.geekbrain.myapplication.databinding.FragmentMainBinding
-import com.geekbrain.myapplication.detailes.DetailesFragment
+import com.geekbrain.myapplication.detailes.DetailsFragment
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.viewmodel.AppState
 import com.geekbrain.myapplication.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 
 
-/**
- * A simple [Fragment] subclass.
- * Use the [MainFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
@@ -61,8 +56,8 @@ class MainFragment : Fragment() {
         override fun OnItemClick(weather: Weather) {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
-                    .add(R.id.container, DetailesFragment.newInstance(Bundle().apply {
-                        putParcelable(DetailesFragment.BUNDLE_EXTRA, weather)
+                    .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
+                        putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
                     }))
                     .addToBackStack("")
                     .commitAllowingStateLoss()

@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Домашняя работа 3</string>
-    <string name="temperature_label">Температура</string>
-    <string name="feels_like_label">Ощущается</string>
+    <string name="app_name">Домашняя работа 5</string>
+    <string name="temperature_label">Температура, С</string>
+    <string name="feels_like_label">Ощущается как</string>
     <string name="city_coordinates">lt/ln: %s, %s"</string>
     <string name="error">Ошибка</string>
     <string name="reload">Перезагрузить</string>
+    <string name="wind_speed_label">Скорость ветра, м/с</string>
+    <string name="wind_dir_label">Направление ветра</string>
+    <string name="pressure_label">Давление, mm</string>
+    <string name="humidity_label">Влажность %</string>
+    <string name="forecast_date_label">Прогноз на</string>
+    <string name="min_temperature_label">Мин. температура, C</string>
+    <string name="max_temperature_label">Макс. температура, C</string>
+    <string name="morning">Morning</string>
+    <string name="day">Day</string>
 </resources>

@@ -1,14 +1,38 @@
 package com.geekbrain.myapplication.model
 
+import android.os.Parcel
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
 
-@Parcelize
 data class Weather(
-    val city: City = getDefaultCity(),
+    val city: City? = getDefaultCity(),
     val temperature: Int = -7,
     val feelsLike: Int = -8
-) :Parcelable
+) :Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readParcelable(City::class.java.classLoader),
+        parcel.readInt(),
+        parcel.readInt()
+    ) {
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Weather> {
+        override fun createFromParcel(parcel: Parcel): Weather {
+            return Weather(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Weather?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 fun getDefaultCity() = City("Saint-Petersburg", 59.93750, 30.308611 )
 

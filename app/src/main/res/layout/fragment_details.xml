@@ -16,13 +16,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/city_name_margin_top"
-            android:textSize="35sp"
+            android:textSize="@dimen/title_text_size"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Москва" />
+
 
         <TextView
             android:id="@+id/cityCoordinates"
@@ -36,38 +37,48 @@
             tools:text="lt/ln: 55.755826, 37.617299900000035" />
 
         <TextView
+            android:id="@+id/weatherCondition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            tools:text = "Облачно"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cityCoordinates"
+            android:textSize="@dimen/text_size"/>
+
+        <TextView
             android:id="@+id/temperatureLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_15_dp"
+            android:layout_marginTop="@dimen/margin_5_dp"
             android:textColor="@color/black"
             android:text="@string/temperature_label"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cityCoordinates" />
+            app:layout_constraintTop_toBottomOf="@+id/weatherCondition" />
 
         <TextView
             android:id="@+id/temperatureValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_15_dp"
-            android:textSize="@dimen/temperature_value_text_size"
+            android:layout_marginTop="@dimen/margin_10_dp"
+            android:textSize="@dimen/text_size"
             android:textColor="@color/black"
             android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/temperatureLabel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/temperatureLabel"
+            app:layout_constraintTop_toBottomOf="@+id/weatherCondition"
             tools:text="+15" />
 
         <TextView
             android:id="@+id/feelsLikeLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_15_dp"
+            android:layout_marginTop="@dimen/margin_5_dp"
             android:textColor="@color/black"
-
             android:text="@string/feels_like_label"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/temperatureValue" />
 
@@ -75,15 +86,114 @@
             android:id="@+id/feelsLikeValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_15_dp"
-            android:textSize="@dimen/feels_like_text_size"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textSize="@dimen/text_size"
             android:textColor="@color/black"
-
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/feelsLikeLabel"
+            app:layout_constraintStart_toEndOf="@id/feelsLikeLabel"
+            app:layout_constraintTop_toBottomOf="@+id/temperatureValue"
             tools:text="-23" />
+
+        <TextView
+            android:id="@+id/windSpeedLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textColor="@color/black"
+            android:text="@string/wind_speed_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/feelsLikeValue" />
+
+        <TextView
+            android:id="@+id/windSpeedValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/windSpeedLabel"
+            app:layout_constraintTop_toBottomOf="@+id/feelsLikeValue"
+            tools:text="10" />
+
+        <TextView
+            android:id="@+id/windDirLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textColor="@color/black"
+            android:text="@string/wind_dir_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/windSpeedValue" />
+
+        <TextView
+            android:id="@+id/windDirValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/windDirLabel"
+            app:layout_constraintTop_toBottomOf="@+id/windSpeedValue"
+            tools:text="nw" />
+
+        <TextView
+            android:id="@+id/pressureLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textColor="@color/black"
+            android:text="@string/pressure_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/windDirValue" />
+
+        <TextView
+            android:id="@+id/pressureValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/pressureLabel"
+            app:layout_constraintTop_toBottomOf="@+id/windDirValue"
+            tools:text="720" />
+
+        <TextView
+            android:id="@+id/humidityLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textColor="@color/black"
+            android:text="@string/humidity_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pressureValue" />
+
+        <TextView
+            android:id="@+id/humidityValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5_dp"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/humidityLabel"
+            app:layout_constraintTop_toBottomOf="@+id/pressureValue"
+            tools:text="80" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
