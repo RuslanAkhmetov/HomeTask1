@@ -187,6 +187,48 @@
             app:layout_constraintTop_toBottomOf="@+id/pressureValue"
             tools:text="80" />
 
+        <TextView
+            android:id="@+id/forecastDateLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_10_dp"
+            android:textColor="@color/black"
+            android:text="@string/forecast_date_label"
+            android:textSize="@dimen/text_size"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/humidityValue" />
+
+        <ImageButton
+            android:id="@+id/date_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/forecastDateLabel"
+            app:layout_constraintTop_toBottomOf="@id/humidityValue"
+            android:src="@drawable/ic_baseline_chevron_left_24"
+            />
+
+        <TextView
+            android:id="@+id/forecastDateValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_10_dp"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/date_left"
+            app:layout_constraintTop_toBottomOf="@id/humidityValue"
+            tools:text="YYYY-MM-DD" />
+
+        <ImageButton
+            android:id="@+id/date_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/forecastDateValue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/humidityValue"
+            android:src="@drawable/ic_baseline_chevron_right_24"
+            />
+
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

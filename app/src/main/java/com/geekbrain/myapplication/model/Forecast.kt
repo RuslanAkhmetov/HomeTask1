@@ -32,7 +32,11 @@ class Forecast {
     @Expose
     var moonText: String? = null
 
-    @SerializedName("parts")
+    @SerializedName("hours")
     @Expose
-    var parts: List<Part>? = null
+    var hours : List<Hours?> = listOf()
+
+    @SerializedName("biomet")
+    @Expose
+    var biomet : Biomet? = Biomet()
 }

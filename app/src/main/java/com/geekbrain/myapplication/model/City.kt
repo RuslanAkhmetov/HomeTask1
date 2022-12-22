@@ -5,20 +5,20 @@ import android.os.Parcelable
 
 data class City(
     val city: String?,
-    val lat: Double,
-    val lon: Double
+    val lat: Float,
+    val lon: Float
 ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
-        parcel.readDouble(),
-        parcel.readDouble()
+        parcel.readFloat(),
+        parcel.readFloat()
     ) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(city)
-        parcel.writeDouble(lat)
-        parcel.writeDouble(lon)
+        parcel.writeFloat(lat)
+        parcel.writeFloat(lon)
     }
 
     override fun describeContents(): Int {
