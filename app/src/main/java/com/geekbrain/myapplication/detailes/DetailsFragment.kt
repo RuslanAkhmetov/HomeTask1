@@ -49,6 +49,8 @@ class DetailsFragment : Fragment() {
         }
     }
 
+    private val detailsFragmentAdapter = HourlyForeCastAdapter()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -69,6 +71,7 @@ class DetailsFragment : Fragment() {
 
         binding.mainView.visibility = View.GONE
         binding.loadingLayout.visibility = View.VISIBLE
+        binding.HourlyForeCastRecyclerView.adapter = detailsFragmentAdapter
 
         val loader = WeatherLoader(onLoaderListener, weatherBundle.city.lat, weatherBundle.city.lon)
         loader.loaderWeather()
@@ -102,13 +105,23 @@ class DetailsFragment : Fragment() {
             pressureValue.text = weatherDTO.fact?.pressureMm.toString()
             humidityValue.text = weatherDTO.fact?.humidity.toString()
 
-            forecastDateValue.text = weatherDTO.forecasts[5]?.date
+            forecastDateValue.text = weatherDTO.forecasts[item]?.date
+            weatherDTO.forecasts[item]?.let { it1 ->
+                detailsFragmentAdapter.setHoursForecast(
+                    it1.hours)
+            }
 
             Log.i(TAG, "displayWeather: ${dateLeft.isClickable}")
             dateLeft.setOnClickListener{
-                item = item-- % weatherDTO.forecasts.size
-                Log.i(TAG, "setOnClickListener: $item")
-                forecastDateValue.text = weatherDTO.forecasts[item]?.date
+                if(item - 1 >=0 ) {
+                    item =--item % weatherDTO.forecasts.size
+                    Log.i(TAG, "setOnClickListener: $item")
+                    forecastDateValue.text = weatherDTO.forecasts[item]?.date
+                    weatherDTO.forecasts[item]?.let { it1 ->
+                        detailsFragmentAdapter.setHoursForecast(
+                            it1.hours)
+                    }
+                }
             }
 
             dateRight.setOnClickListener{
@@ -116,17 +129,15 @@ class DetailsFragment : Fragment() {
                 item %= weatherDTO.forecasts.size
                 Log.i(TAG, "setOnClickListener: $item")
                 forecastDateValue.text = weatherDTO.forecasts[item]?.date
+                weatherDTO.forecasts[item]?.let { it1 ->
+                    detailsFragmentAdapter.setHoursForecast(
+                        it1.hours)
+                }
             }
 
-            /*minTempValue.text = weatherDTO.forecasts[1]?.parts?.day?.temp_min.toString()
-            maxTempValue.text = weatherDTO.forecasts[1]?.parts?.day?.temp_max.toString()*/
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun loadWeather() {
-
-    }
 
 
 }

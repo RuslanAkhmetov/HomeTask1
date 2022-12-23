@@ -2,118 +2,46 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:background="@color/fragmentBackground">
-
-
+    android:background="@color/fragmentBackground"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/morning"
+        android:id="@+id/hour"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/forecastDateValue"
-        android:text="@string/morning"
-        tools:text="Morning"/>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1"/>
 
 
     <TextView
-        android:id="@+id/minTempLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:text="@string/min_temperature_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/morning" />
-
-    <TextView
-        android:id="@+id/minMorningTempValue"
+        android:id="@+id/hourTemperatureValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_5_dp"
         android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/minTempLabel"
-        app:layout_constraintTop_toBottomOf="@+id/morning"
-        tools:text="-2" />
-
-    <TextView
-        android:id="@+id/maxTempLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:text="@string/max_temperature_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/minMorningTempValue" />
+        app:layout_constraintTop_toBottomOf="@+id/hour"
+        tools:text="-2 C" />
+
 
     <TextView
-        android:id="@+id/maxMorningTempValue"
+        android:id="@+id/hourPressureValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_5_dp"
         android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/maxTempLabel"
-        app:layout_constraintTop_toBottomOf="@+id/minMorningTempValue"
-        tools:text="-1" />
-
-    <TextView
-        android:id="@+id/day"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/maxMorningTempValue"
-        android:text="@string/day"
-        tools:text="Day"/>
+        app:layout_constraintTop_toBottomOf="@+id/hourTemperatureValue"
+        tools:text="720 mm" />
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:text="@string/min_temperature_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day" />
-
-    <TextView
-        android:id="@+id/minDayTempValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/minTempLabel"
-        app:layout_constraintTop_toBottomOf="@+id/day"
-        tools:text="-2" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:text="@string/max_temperature_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/minDayTempValue" />
-
-    <TextView
-        android:id="@+id/maxDayTempValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/maxTempLabel"
-        app:layout_constraintTop_toBottomOf="@+id/minDayTempValue"
-        tools:text="-1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
