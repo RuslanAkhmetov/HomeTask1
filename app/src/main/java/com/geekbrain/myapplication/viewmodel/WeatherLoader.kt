@@ -36,7 +36,7 @@ open class WeatherLoader(
                     "https://api.weather.yandex.ru/v2/forecast?lat=${lat}"
                             + "&lon=${lon}"
                             + "&lang=ru_RU"
-                            + "&limit=7"
+                            + "&limit=4"
                 )
 
             val handler = Handler()

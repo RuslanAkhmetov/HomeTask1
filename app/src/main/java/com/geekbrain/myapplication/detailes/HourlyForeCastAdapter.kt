@@ -3,8 +3,10 @@ package com.geekbrain.myapplication.detailes
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.model.Hours
 
@@ -18,9 +20,22 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
     }
 
     class HourViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        val hour: TextView = view.findViewById(R.id.hour)
+        val hourTextView: TextView = view.findViewById(R.id.hour)
         val hourlyTemperatureTextView: TextView = view.findViewById(R.id.hourTemperatureValue)
         val hourlyPressureTextView: TextView = view.findViewById(R.id.hourPressureValue)
+        val hourlyHumidityTextView: TextView = view.findViewById(R.id.hourHumidityValue)
+        val weatherIcon: ImageView = view.findViewById(R.id.iconView)
+
+        fun bind(hour: Hours){
+            hourTextView.text = hour.hour
+            hourlyTemperatureTextView.text =String.format("%d C", hour.temp)
+            hourlyPressureTextView.text = String.format("%d mm",hour.pressureMm)
+            hourlyHumidityTextView.text = String.format("%d %%", hour.humidity)
+
+            Glide.with(itemView)
+                .load(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg.", hour.icon))
+                    .into(weatherIcon)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourViewHolder {
@@ -29,9 +44,7 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
     }
 
     override fun onBindViewHolder(holder: HourViewHolder, position: Int) {
-        holder.hour.text = dayForecast[position].hour
-        holder.hourlyTemperatureTextView.text = dayForecast[position].temp.toString() + " C"
-        holder.hourlyPressureTextView.text = dayForecast[position].precMm.toString() + " mm"
+            holder.bind(dayForecast[position])
 
     }
 
