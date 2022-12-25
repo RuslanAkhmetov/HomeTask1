@@ -54,7 +54,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/hourPressureValue"
-        tools:text="720 mm" />
+        tools:text="96 %" />
 
     <ImageView
         android:id="@+id/iconView"

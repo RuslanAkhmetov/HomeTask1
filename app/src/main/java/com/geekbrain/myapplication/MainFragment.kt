@@ -55,7 +55,7 @@ class MainFragment : Fragment() {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
                     .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
-                        putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
+                        putString(DetailsFragment.BUNDLE_EXTRA, weather.city.city)
                     }))
                     .addToBackStack("")
                     .commitAllowingStateLoss()
