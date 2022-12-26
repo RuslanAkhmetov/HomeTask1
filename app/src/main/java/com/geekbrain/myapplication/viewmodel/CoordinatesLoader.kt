@@ -5,7 +5,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.geekbrain.myapplication.BuildConfig
-import com.geekbrain.myapplication.model.WeatherDTO
+import com.geekbrain.myapplication.model.CoordinatesDTO
 import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.InputStream
@@ -15,30 +15,27 @@ import java.net.URL
 import java.util.stream.Collectors
 import javax.net.ssl.HttpsURLConnection
 
-open class WeatherLoader(
-    private val listener: WeatherLoaderListener,
-    private val lat: Float,
-    private val lon: Float,
+class CoordinatesLoader(
+    val listener: CoordinateLoaderListener,
+    val adress: String,
 ) {
-    private val TAG = "WeatherLoader"
+    private val TAG = "CoordinatesLoader"
 
-    interface WeatherLoaderListener {
-        fun onLoaded(weatherDTO: WeatherDTO)
+    interface CoordinateLoaderListener {
+        fun onLoaded(pos: String)
         fun onFailed(throwable: Throwable)
     }
 
-
     @RequiresApi(Build.VERSION_CODES.N)
-    fun loaderWeather() =
+    fun getCoordinates() =
         try {
-            val uri =
-                URL(
-                    "https://api.weather.yandex.ru/v2/forecast?lat=${lat}"
-                            + "&lon=${lon}"
-                            + "&lang=ru_RU"
-                            + "&limit=4"
-                )
-
+            val uri = URL(
+                "https://geocode-maps.yandex.ru/1.x/"
+                        + "?apikey=" + BuildConfig.GEOKOD_API_KEY
+                        + "&geocode=" + adress
+                        + "&format=json"
+            )
+            Log.i(TAG, "getCoordinates: "+ uri.toString())
             val handler = Handler()
             Thread {
 
@@ -46,27 +43,35 @@ open class WeatherLoader(
                 try {
                     urlConnection = (uri.openConnection() as HttpsURLConnection).apply {
                         requestMethod = "GET"
-                        addRequestProperty("X-Yandex-API-Key", BuildConfig.WEATHER_API_KEY)
                         readTimeout = 10000
                     }
-                    var inputStream: InputStream
+
+                    val inputStream: InputStream
                     val bufferedReader: BufferedReader
+
                     if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
                         inputStream = urlConnection.errorStream
-                        Log.i(TAG, "loadWeather: " + urlConnection.responseCode)
                         throw RuntimeException("Can't connect to ${uri.toString()}")
                     } else {
                         bufferedReader =
                             BufferedReader(InputStreamReader(urlConnection.inputStream))
+                        val geoKodResponse: CoordinatesDTO =
+                            Gson().fromJson(getLines(bufferedReader),  CoordinatesDTO::class.java)
+
+                        val point =
+                            geoKodResponse.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject?.Point?.pos
+
+                        Log.i(TAG, "getCoordinates: point = "+ point.toString())
+
+                        handler.post {
+                            point?.let { listener.onLoaded(it) }
+                        }
                     }
-                    val weatherDTO: WeatherDTO =
-                        Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
-                    handler.post {
-                        listener.onLoaded(weatherDTO)
-                    }
+
                 } catch (e: Exception) {
                     Log.e(TAG, "Fail connection ", e)
                     e.printStackTrace()
+
                     handler.post {
                         listener.onFailed(e)
                     }
@@ -82,10 +87,9 @@ open class WeatherLoader(
         }
 
 
-
     @RequiresApi(Build.VERSION_CODES.N)
     private fun getLines(reader: BufferedReader): String {
         return reader.lines().collect(Collectors.joining("\n"))
     }
-}
 
+}

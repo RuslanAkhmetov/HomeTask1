@@ -28,8 +28,9 @@ android {
             Properties properties = new Properties()
             properties.load(project.rootProject.file("ApiKey.properties").newDataInputStream())
             def apiKey = properties.getProperty("yandex_weather_api_key", "")
-
+            def geokodApiKey = properties.getProperty("yandex_geokod_api_key", "")
             it.buildConfigField "String", "WEATHER_API_KEY", apiKey
+            it.buildConfigField "String", "GEOKOD_API_KEY", geokodApiKey
         }
 
     }
@@ -53,6 +54,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
 
     implementation "androidx.activity:activity-ktx:1.6.1"
     implementation "androidx.fragment:fragment-ktx:1.5.5"
