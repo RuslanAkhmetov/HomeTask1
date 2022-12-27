@@ -41,7 +41,6 @@ class MainFragment : Fragment() {
     }
 
     companion object {
-
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
     }
@@ -67,13 +66,15 @@ class MainFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val observer = Observer<AppState> { renderData(it) }
+        val observer = Observer<AppState> {
+            renderData(it)
+        }
         binding.mainFragmentRecyclerView.adapter = adapter
         binding.mainFragmentFAB.setOnClickListener{
             changeWeatherDataSet()
         }
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
-        viewModel.getWeather()
+        viewModel.getWeather(isDataSetRus)
 
     }
 
@@ -87,7 +88,7 @@ class MainFragment : Fragment() {
     private fun renderData(appState: AppState){
         when(appState) {
             is AppState.Success -> {
-                val weatherData = appState.weatherData
+//                val weatherData = appState.weatherData
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 adapter.setWeather(appState.weatherData)
             }
@@ -99,10 +100,11 @@ class MainFragment : Fragment() {
 
             is AppState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
+                Log.i(TAG, "renderData: ${appState.error.message}")
                 binding.mainFragmentFAB.showSnackbar(
-                    "Error",
+                    "Error"+appState.error,
                     "Reload",
-                    {viewModel.getWeather()}
+                    {viewModel.getWeather(isDataSetRus)}
                 )
             }
         }

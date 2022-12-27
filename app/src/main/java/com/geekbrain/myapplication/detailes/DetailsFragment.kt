@@ -87,10 +87,7 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         city = arguments?.getString(BUNDLE_EXTRA) ?: "Москва"
-
-
 
         binding.mainView.visibility = View.GONE
         binding.loadingLayout.visibility = View.VISIBLE
@@ -99,8 +96,6 @@ class DetailsFragment : Fragment() {
         val coordinatesLoader = CoordinatesLoader(coordinatesLoaderListener, city)
         coordinatesLoader.getCoordinates()
         Log.i(TAG, "onViewCreated: city : $city lat: $lat lon $lon")
-
-
 
     }
 
@@ -113,7 +108,6 @@ class DetailsFragment : Fragment() {
         with(binding) {
             mainView.visibility = View.VISIBLE
             loadingLayout.visibility = View.GONE
-
 
             cityName.text = city
             cityCoordinates.text = String.format(

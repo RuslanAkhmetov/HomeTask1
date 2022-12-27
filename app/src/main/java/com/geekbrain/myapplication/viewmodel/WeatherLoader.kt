@@ -17,8 +17,8 @@ import javax.net.ssl.HttpsURLConnection
 
 open class WeatherLoader(
     private val listener: WeatherLoaderListener,
-    private val lat: Float,
-    private val lon: Float,
+    private val lat: Float?,
+    private val lon: Float?,
 ) {
     private val TAG = "WeatherLoader"
 
@@ -26,6 +26,7 @@ open class WeatherLoader(
         fun onLoaded(weatherDTO: WeatherDTO)
         fun onFailed(throwable: Throwable)
     }
+
 
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -49,11 +50,11 @@ open class WeatherLoader(
                         addRequestProperty("X-Yandex-API-Key", BuildConfig.WEATHER_API_KEY)
                         readTimeout = 10000
                     }
-                    var inputStream: InputStream
+                    val inputStream: InputStream
                     val bufferedReader: BufferedReader
                     if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
                         inputStream = urlConnection.errorStream
-                        Log.i(TAG, "loadWeather: " + urlConnection.responseCode)
+                        Log.i(TAG, "loadWeather: " + urlConnection.responseCode + inputStream)
                         throw RuntimeException("Can't connect to ${uri.toString()}")
                     } else {
                         bufferedReader =

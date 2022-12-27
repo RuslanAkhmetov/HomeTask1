@@ -1,7 +1,10 @@
 package com.geekbrain.myapplication.model
+import android.os.Parcelable
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 data class WeatherDTO(
     @SerializedName("now")
     @Expose
@@ -22,6 +25,6 @@ data class WeatherDTO(
     @SerializedName("forecasts")
     @Expose
     val forecasts: List<Forecast?>,
-)
+): Parcelable
 
 
