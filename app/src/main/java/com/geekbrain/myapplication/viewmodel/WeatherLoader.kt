@@ -1,7 +1,6 @@
 package com.geekbrain.myapplication.viewmodel
 
 import android.os.Build
-import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.geekbrain.myapplication.BuildConfig
@@ -40,55 +39,45 @@ open class WeatherLoader(
                             + "&limit=4"
                 )
 
-            Log.i(TAG, "loaderWeather: " + uri)
-
-//            val handler = Handler()
-            Thread {
-
-                lateinit var urlConnection: HttpsURLConnection
-                try {
-                    urlConnection = (uri.openConnection() as HttpsURLConnection).apply {
-                        requestMethod = "GET"
-                        addRequestProperty("X-Yandex-API-Key", BuildConfig.WEATHER_API_KEY)
-                        readTimeout = 10000
-                    }
-                    val inputStream: InputStream
-                    val bufferedReader: BufferedReader
-                    if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
-                        inputStream = urlConnection.errorStream
-                        Log.i(TAG, "loadWeather: " + urlConnection.responseCode + inputStream)
-                        throw RuntimeException("Can't connect to ${uri.toString()}")
-                    } else {
-                        bufferedReader =
-                            BufferedReader(InputStreamReader(urlConnection.inputStream))
-                    }
-                    val weatherDTO: WeatherDTO =
-                        Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
-                    val weather = city?.let { Weather(it, weatherDTO) }
-                    //handler.post {
-                    if (weather != null) {
-                        listener.onLoaded(weather)
-                    } else {
-                        throw RuntimeException("WeatherDTO is not loaded")
-                    }
-                    //}
-                } catch (e: Exception) {
-                    Log.e(TAG, "Fail connection ", e)
-                    e.printStackTrace()
-                   // handler.post {
-                        listener.onFailed(e)
-                    //}
-                } finally {
-                    urlConnection.disconnect()
+            lateinit var urlConnection: HttpsURLConnection
+            try {
+                urlConnection = (uri.openConnection() as HttpsURLConnection).apply {
+                    requestMethod = "GET"
+                    addRequestProperty("X-Yandex-API-Key", BuildConfig.WEATHER_API_KEY)
+                    readTimeout = 10000
                 }
-            }.start()
+                val inputStream: InputStream
+                val bufferedReader: BufferedReader
+                if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
+                    inputStream = urlConnection.errorStream
+                    Log.i(TAG, "loadWeather: " + urlConnection.responseCode + inputStream)
+                    throw RuntimeException("Can't connect to ${uri.toString()}")
+                } else {
+                    bufferedReader =
+                        BufferedReader(InputStreamReader(urlConnection.inputStream))
+                }
+                val weatherDTO: WeatherDTO =
+                    Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
+                val weather = city?.let { Weather(it, weatherDTO) }
+                if (weather != null) {
+                    listener.onLoaded(weather)
+                } else {
+                    throw RuntimeException("WeatherDTO is not loaded")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Fail connection ", e)
+                e.printStackTrace()
+                listener.onFailed(e)
+            } finally {
+                urlConnection.disconnect()
+            }
+            // }.start()
         } catch (e: MalformedURLException) {
             Log.e(TAG, "Fail URI ", e)
             e.printStackTrace()
 
             listener.onFailed(e)
         }
-
 
 
     @RequiresApi(Build.VERSION_CODES.N)

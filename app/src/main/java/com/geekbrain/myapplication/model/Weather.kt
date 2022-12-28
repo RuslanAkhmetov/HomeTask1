@@ -10,19 +10,19 @@ data class Weather(
 ) :Parcelable
 
 
-fun getDefaultCity() = City("Saint-Petersburg", null, null  )
+fun getDefaultCity() = City("Saint-Petersburg",true, null, null  )
 
 fun getWorldCities() = listOf(
-        Weather(City("London", null, null), null ),
-        Weather(City("Tokio", null, null), null),
-        Weather(City("Paris", null, null), null),
+        Weather(City("London", false, null, null), null ),
+        Weather(City("Tokio",false, null, null), null),
+        Weather(City("Paris",false, null, null), null),
     )
 
 
 fun getRussianCities()= listOf(
-        Weather(City("Moscow", null, null),null),
-        Weather(City("Saint-Petersburg", null, null), null),
-        Weather(City("Novosibirsk", null, null), null),
-        Weather(City("Барнаул", null, null), null)
+        Weather(City("Moscow",true, null, null),null),
+        Weather(City("Saint-Petersburg",true, null, null), null),
+        Weather(City("Novosibirsk",true, null, null), null),
+        Weather(City("Барнаул",true, null, null), null)
     )
 

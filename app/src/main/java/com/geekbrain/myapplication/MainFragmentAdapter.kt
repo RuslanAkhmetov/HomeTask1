@@ -25,7 +25,7 @@ class MainFragmentAdapter (private var onItemViewClickListener: OnItemViewClickL
         fun bind(weather: Weather){
             itemView.apply {
                 findViewById<TextView>(R.id.mainFragmentRecyclerItemTextView).text =
-                    "${weather.city?.city.toString()} - ${weather.weatherDTO?.fact?.temp.toString()}"
+                    "${weather.city.city.toString()}     ${weather.weatherDTO?.fact?.temp.toString()}"
 
                 setOnClickListener {
                     onItemViewClickListener?.OnItemClick(weather)

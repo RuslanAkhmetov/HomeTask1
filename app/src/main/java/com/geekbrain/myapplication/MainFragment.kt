@@ -35,7 +35,6 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout for this fragment
         _binding = FragmentMainBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -54,7 +53,7 @@ class MainFragment : Fragment() {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
                     .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
-                        putString(DetailsFragment.BUNDLE_EXTRA, weather.city.city)
+                        putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
                     }))
                     .addToBackStack("")
                     .commitAllowingStateLoss()
@@ -74,7 +73,6 @@ class MainFragment : Fragment() {
             changeWeatherDataSet()
         }
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
-       // viewModel.getLiveData()
 
     }
 
@@ -88,9 +86,10 @@ class MainFragment : Fragment() {
     private fun renderData(appState: AppState){
         when(appState) {
             is AppState.Success -> {
-//                val weatherData = appState.weatherData
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData)
+                adapter.setWeather(appState.weatherData.filter {
+                        weather -> weather.city.isRus == isDataSetRus }
+                    .toList())
             }
 
             is AppState.Loading -> {
@@ -104,21 +103,21 @@ class MainFragment : Fragment() {
                 binding.mainFragmentFAB.showSnackbar(
                     "Error"+appState.error,
                     "Reload",
-                    {viewModel.getWeather(isDataSetRus)}
+                    {viewModel.refreshDataFromRepository()}
                 )
             }
         }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.N)
     private fun changeWeatherDataSet(){
         if (isDataSetRus){
-            viewModel.getWeatherFromLocalSourceWorld()
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
         } else{
-            viewModel.getWeatherFromLocalSourceRus()
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
         }.also {  isDataSetRus = !isDataSetRus }
+        renderData(viewModel.getLiveData().value as AppState)
     }
 
     private fun View.showSnackbar(
