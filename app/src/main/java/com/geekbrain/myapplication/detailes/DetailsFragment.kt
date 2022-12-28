@@ -10,6 +10,8 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentDetailsBinding
+import com.geekbrain.myapplication.model.City
+import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.model.WeatherDTO
 import com.geekbrain.myapplication.viewmodel.CoordinatesLoader
 import com.geekbrain.myapplication.viewmodel.WeatherLoader
@@ -25,12 +27,11 @@ class DetailsFragment : Fragment() {
     private val coordinatesLoaderListener =
         object : CoordinatesLoader.CoordinateLoaderListener {
             @RequiresApi(Build.VERSION_CODES.N)
-            override fun onLoaded(pos: String) {
+            override fun onLoaded(city: City) {
 
-                val fl = pos.split(" ").map { it.toFloat() }
-                    lon = fl[0]
-                    lat = fl[1]
-                val loader = WeatherLoader(onLoaderListener, lat, lon)
+
+                val loader = WeatherLoader(onLoaderListener, city)
+
                 loader.loaderWeather()
             }
 
@@ -42,8 +43,8 @@ class DetailsFragment : Fragment() {
 
     private val onLoaderListener: WeatherLoader.WeatherLoaderListener =
         object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weatherDTO: WeatherDTO) {
-                displayWeather(weatherDTO)
+            override fun onLoaded(weather: Weather) {
+                weather.weatherDTO?.let { displayWeather(it) }
             }
 
             override fun onFailed(throwable: Throwable) {
@@ -93,8 +94,9 @@ class DetailsFragment : Fragment() {
         binding.loadingLayout.visibility = View.VISIBLE
         binding.HourlyForeCastRecyclerView.adapter = detailsFragmentAdapter
 
-        val coordinatesLoader = CoordinatesLoader(coordinatesLoaderListener, city)
-        coordinatesLoader.getCoordinates()
+        val coordinatesLoader = CoordinatesLoader(coordinatesLoaderListener, City(city, null, null)).apply {
+                getCoordinates()
+        }
         Log.i(TAG, "onViewCreated: city : $city lat: $lat lon $lon")
 
     }

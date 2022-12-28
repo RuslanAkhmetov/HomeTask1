@@ -5,6 +5,8 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.geekbrain.myapplication.BuildConfig
+import com.geekbrain.myapplication.model.City
+import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.model.WeatherDTO
 import com.google.gson.Gson
 import java.io.BufferedReader
@@ -17,16 +19,14 @@ import javax.net.ssl.HttpsURLConnection
 
 open class WeatherLoader(
     private val listener: WeatherLoaderListener,
-    private val lat: Float?,
-    private val lon: Float?,
+    private val city: City?,
 ) {
     private val TAG = "WeatherLoader"
 
     interface WeatherLoaderListener {
-        fun onLoaded(weatherDTO: WeatherDTO)
+        fun onLoaded(weather: Weather)
         fun onFailed(throwable: Throwable)
     }
-
 
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -34,13 +34,15 @@ open class WeatherLoader(
         try {
             val uri =
                 URL(
-                    "https://api.weather.yandex.ru/v2/forecast?lat=${lat}"
-                            + "&lon=${lon}"
+                    "https://api.weather.yandex.ru/v2/forecast?lat=${city?.lat}"
+                            + "&lon=${city?.lon}"
                             + "&lang=ru_RU"
                             + "&limit=4"
                 )
 
-            val handler = Handler()
+            Log.i(TAG, "loaderWeather: " + uri)
+
+//            val handler = Handler()
             Thread {
 
                 lateinit var urlConnection: HttpsURLConnection
@@ -62,15 +64,20 @@ open class WeatherLoader(
                     }
                     val weatherDTO: WeatherDTO =
                         Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
-                    handler.post {
-                        listener.onLoaded(weatherDTO)
+                    val weather = city?.let { Weather(it, weatherDTO) }
+                    //handler.post {
+                    if (weather != null) {
+                        listener.onLoaded(weather)
+                    } else {
+                        throw RuntimeException("WeatherDTO is not loaded")
                     }
+                    //}
                 } catch (e: Exception) {
                     Log.e(TAG, "Fail connection ", e)
                     e.printStackTrace()
-                    handler.post {
+                   // handler.post {
                         listener.onFailed(e)
-                    }
+                    //}
                 } finally {
                     urlConnection.disconnect()
                 }

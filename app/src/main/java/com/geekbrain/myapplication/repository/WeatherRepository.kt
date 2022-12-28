@@ -3,31 +3,39 @@ package com.geekbrain.myapplication.repository
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.geekbrain.myapplication.model.Weather
-import com.geekbrain.myapplication.model.WeatherDTO
-import com.geekbrain.myapplication.model.getRussianCities
-import com.geekbrain.myapplication.model.getWorldCities
+import com.geekbrain.myapplication.model.*
 import com.geekbrain.myapplication.viewmodel.CoordinatesLoader
 import com.geekbrain.myapplication.viewmodel.WeatherLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.lang.Thread.sleep
+import java.util.*
 
 class WeatherRepository : Repository {
 
     private val TAG = "WeatherRepository"
 
-    private var weather: Weather = Weather(weatherDTO = null)
+    private lateinit var weather: Weather //= Weather(weatherDTO = null)
 
-    private var listWeatherReceived: MutableList<Weather> = mutableListOf()
+    private var listWeatherReceived:  MutableList<Weather> = mutableListOf()
+
+    override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override suspend fun refreshWeatherList(){
+        withContext(Dispatchers.IO){
+            getWeatherFromServer(getWeatherFromLocalStorageRus())
+        }
+    }
 
     private val coordinatesLoaderListener =
         object : CoordinatesLoader.CoordinateLoaderListener {
             @RequiresApi(Build.VERSION_CODES.N)
-            override fun onLoaded(pos: String) {
+            override fun onLoaded(city: City) {
 
-                val fl = pos.split(" ").map { it.toFloat() }
-                weather.city.lon = fl[0]
-                weather.city.lat = fl[1]
-                Log.i(TAG, "onLoaded: $weather.city.lat $weather.city.lon")
-                WeatherLoader(onLoaderListener, weather.city.lat, weather.city.lon).apply {
+
+                Log.i(TAG, "onLoadedCoordinates: ${city.city} lat = ${city.lat} lon = ${city.lon}")
+                WeatherLoader(onLoaderListener, city).apply {
                     loaderWeather()
                 }
             }
@@ -41,9 +49,8 @@ class WeatherRepository : Repository {
 
     private val onLoaderListener: WeatherLoader.WeatherLoaderListener =
         object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weatherDTO: WeatherDTO) {
-                weather.weatherDTO = weatherDTO
-                Log.i(TAG, "onLoaded: ${weather.toString()}")
+            override fun onLoaded(weather: Weather) {
+                Log.i(TAG, "onLoadedWeather: ${weather.toString()}")
                 listWeatherReceived.add(weather)
                 Log.i(TAG, "onLoaded: "+ listWeatherReceived.size)
             }
@@ -56,27 +63,32 @@ class WeatherRepository : Repository {
         }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun getWeatherFromServer(listWeather: List<Weather>): List<Weather> {
-        for (weather in listWeather) {
-            Log.i(TAG, "getWeatherFromServer: $weather")
-            if (weather.city.lat == null || weather.city.lon == null) {
-                    weather.city.city?.let { it ->
+    override fun getWeatherFromServer(listWeather: List<Weather>){//: List<Weather> {
+        for (weatherItem in listWeather) {
+            //weather = weatherItem
+            if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
+                    weatherItem.city?.let { it ->
+                        Log.i(TAG, "getWeatherFromServer before get Coordinates: $it")
+
                         CoordinatesLoader(coordinatesLoaderListener, it)
                             .also {
+                                //Log.i(TAG, "getWeatherFromServer before get Coordinates: ${weather.city.city}")
                                 it.getCoordinates()
                             }
                     }
             } else {
-                val loader = WeatherLoader(onLoaderListener, weather.city.lat, weather.city.lon)
+                val loader = WeatherLoader(onLoaderListener, weatherItem.city)
                 loader.loaderWeather()
             }
         }
+        sleep(5000)
         Log.i(TAG, "getWeatherFromServer: listWeatherReceived" + listWeatherReceived.size)
-        return listWeatherReceived
+        //return listWeatherReceived
     }
 
     override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()
 
     override fun getWeatherFromLocalStorageWorld(): List<Weather> = getWorldCities()
+
 
 }

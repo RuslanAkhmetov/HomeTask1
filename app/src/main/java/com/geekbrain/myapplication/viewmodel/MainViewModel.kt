@@ -1,39 +1,70 @@
 package com.geekbrain.myapplication.viewmodel
 
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.geekbrain.myapplication.model.Weather
+import androidx.lifecycle.viewModelScope
 import com.geekbrain.myapplication.repository.Repository
 import com.geekbrain.myapplication.repository.WeatherRepository
+import kotlinx.coroutines.launch
 import java.lang.Thread.sleep
-import java.util.Random
 
+@RequiresApi(Build.VERSION_CODES.N)
 class MainViewModel(
     private var liveDataToObserve: MutableLiveData<AppState> = MutableLiveData(),
-    private val repository: Repository = WeatherRepository()
+    private val weatherRepository: Repository = WeatherRepository()
 ) : ViewModel() {
 
     private val TAG = "MainViewModel"
 
     fun getLiveData() = liveDataToObserve
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun getWeather(isRus: Boolean) {
-        getDataFromLocalSource(isRus)
-        getWeatherFromRemoteSource()
+    val weatherList = weatherRepository.getWeatherFromRepository()
+
+    init {
+        //getWeather(isRus = true)
+        refreshDataFromRepository()
+        sleep(10000)
+        liveDataToObserve.postValue(AppState.Success(weatherList))
+    }
+
+
+    private fun refreshDataFromRepository(){
+        val handler = Handler()
+
+        viewModelScope.launch {
+            try{
+                weatherRepository.refreshWeatherList()
+
+            } catch (e: Exception){
+                if(liveDataToObserve.value == null) {
+                    Log.i(TAG, "refreshDataFromRepository: "+ e.message)
+                    liveDataToObserve.postValue(AppState.Error(e))
+                }
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
+    fun getWeather(isRus: Boolean) {
+        viewModelScope.launch {
+            getDataFromLocalSource(isRus)
+            //getWeatherFromRemoteSource()
+
+        }
+    }
+
+    /*@RequiresApi(Build.VERSION_CODES.N)
     fun getWeatherFromRemoteSource() {
-        Log.i(TAG, "getWeatherFromRemoteSource: "+  liveDataToObserve.value!!::class.java)
+        Log.i(TAG, "getWeatherFromRemoteSource: " +  liveDataToObserve.value!!::class.java)
         if (liveDataToObserve.value is AppState.Success) {
             try {
                 liveDataToObserve.setValue(
                     AppState.Success(
-                        repository.getWeatherFromServer((liveDataToObserve.value as AppState.Success)
+                        weatherRepository.getWeatherFromServer((liveDataToObserve.value as AppState.Success)
                             .weatherData)))
             } catch (e: Exception) {
                 liveDataToObserve.setValue(
@@ -45,7 +76,7 @@ class MainViewModel(
                 AppState.Error(
                     java.lang.RuntimeException("Loading data from Server Error: weatherData should be initialized")))
         }
-    }
+    }*/
 
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -63,9 +94,9 @@ class MainViewModel(
                 liveDataToObserve.setValue(
                     AppState.Success(
                         if (isRus) {
-                            repository.getWeatherFromLocalStorageRus()
+                            weatherRepository.getWeatherFromLocalStorageRus()
                         } else {
-                            repository.getWeatherFromLocalStorageWorld()
+                            weatherRepository.getWeatherFromLocalStorageWorld()
                         }
                     )
                 )

@@ -15,13 +15,14 @@ fun getDefaultCity() = City("Saint-Petersburg", null, null  )
 fun getWorldCities() = listOf(
         Weather(City("London", null, null), null ),
         Weather(City("Tokio", null, null), null),
-        Weather(City("Paris", null, null), null)
+        Weather(City("Paris", null, null), null),
     )
 
 
 fun getRussianCities()= listOf(
         Weather(City("Moscow", null, null),null),
         Weather(City("Saint-Petersburg", null, null), null),
-        Weather(City("Novosibirsk", null, null), null)
+        Weather(City("Novosibirsk", null, null), null),
+        Weather(City("Барнаул", null, null), null)
     )
 

@@ -74,7 +74,7 @@ class MainFragment : Fragment() {
             changeWeatherDataSet()
         }
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
-        viewModel.getWeather(isDataSetRus)
+       // viewModel.getLiveData()
 
     }
 

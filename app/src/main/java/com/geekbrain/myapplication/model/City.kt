@@ -16,7 +16,6 @@ data class City(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(city)
-
         lat?.let { parcel.writeFloat(it) }
         lon?.let { parcel.writeFloat(it) }
     }
