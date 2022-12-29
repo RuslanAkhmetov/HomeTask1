@@ -71,7 +71,6 @@ open class WeatherLoader(
             } finally {
                 urlConnection.disconnect()
             }
-            // }.start()
         } catch (e: MalformedURLException) {
             Log.e(TAG, "Fail URI ", e)
             e.printStackTrace()

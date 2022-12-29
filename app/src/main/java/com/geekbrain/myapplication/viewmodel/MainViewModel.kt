@@ -34,10 +34,10 @@ class MainViewModel(
                 weatherRepository.refreshWeatherList()
                 liveDataToObserve.postValue(Success(weatherList))
             } catch (e: Exception) {
-                if (liveDataToObserve.value == null) {
-                    Log.i(TAG, "refreshDataFromRepository: " + e.message)
+                //if (liveDataToObserve.value == null) {
+                    Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                     liveDataToObserve.postValue(Error(e))
-                }
+                //}
             }
         }
     }

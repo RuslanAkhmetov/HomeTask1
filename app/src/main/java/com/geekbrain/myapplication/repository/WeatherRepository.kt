@@ -8,7 +8,6 @@ import com.geekbrain.myapplication.viewmodel.CoordinatesLoader
 import com.geekbrain.myapplication.viewmodel.WeatherLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.*
 
 class WeatherRepository : Repository {
 
@@ -18,10 +17,17 @@ class WeatherRepository : Repository {
 
     override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
 
+
     @RequiresApi(Build.VERSION_CODES.N)
     override suspend fun refreshWeatherList() {
+
         withContext(Dispatchers.IO) {
-            getWeatherFromServer(getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld())
+            try {
+                getWeatherFromServer(getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld())
+            } catch (e: Exception){
+                throw e
+            }
+
         }
     }
 
@@ -58,6 +64,7 @@ class WeatherRepository : Repository {
     override fun getWeatherFromServer(listWeather: List<Weather>) {
 
         for (weatherItem in listWeather) {
+            try{
             if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
                 CoordinatesLoader(coordinatesLoaderListener, weatherItem.city)
                     .also {
@@ -67,8 +74,12 @@ class WeatherRepository : Repository {
                 val loader = WeatherLoader(onLoaderListener, weatherItem.city)
                 loader.loaderWeather()
             }
+            } catch (e: Exception){
+                Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
+                throw e
+            }
         }
-        Log.i(TAG, "getWeatherFromServer: listWeatherReceived" + listWeatherReceived.size)
+        Log.i(TAG, "getWeatherFromServer: listWeatherReceived " + listWeatherReceived.size)
     }
 
     override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()

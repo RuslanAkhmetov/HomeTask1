@@ -21,7 +21,7 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
     private var dayForecast: List<Hours> = listOf()
 
     fun setHoursForecast(arrayWithHourForecast: List<Hours?>){
-        dayForecast = arrayWithHourForecast.let { it } as List<Hours>
+        dayForecast = arrayWithHourForecast?.let { it } as List<Hours>
         notifyDataSetChanged()
     }
 
@@ -71,8 +71,8 @@ fun ImageView.loadSvg(url: String) {
     val request = ImageRequest.Builder(this.context)
         .crossfade(true)
         .crossfade(500)
-        .placeholder(R.drawable.ic_baseline_error_outline_24)
-        .error(R.drawable.ic_baseline_error_outline_24)
+        //.placeholder(R.drawable.ic_baseline_error_outline_24)
+        //.error(R.drawable.ic_baseline_error_outline_24)
         .data(url)
         .target(this)
         .build()
