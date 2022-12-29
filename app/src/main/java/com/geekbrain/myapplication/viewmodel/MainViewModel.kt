@@ -1,53 +1,46 @@
 package com.geekbrain.myapplication.viewmodel
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.geekbrain.myapplication.repository.Repository
 import com.geekbrain.myapplication.repository.WeatherRepository
-import java.lang.Thread.sleep
-import java.util.Random
+import com.geekbrain.myapplication.viewmodel.AppState.*
+import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.N)
 class MainViewModel(
-    private val liveDataToObserve: MutableLiveData<AppState> = MutableLiveData(),
-    private val repository: Repository = WeatherRepository()
+    private var liveDataToObserve: MutableLiveData<AppState> = MutableLiveData(),
+    private val weatherRepository: Repository = WeatherRepository()
 ) : ViewModel() {
+
+    private val TAG = "MainViewModel"
 
     fun getLiveData() = liveDataToObserve
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun getWeather() = getDataFromLocalSource(true)
+    private val weatherList = weatherRepository.getWeatherFromRepository()
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun getWeatherFromRemoteSource() = getDataFromLocalSource(true)
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun getWeatherFromLocalSourceRus() = getDataFromLocalSource(true)
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun getWeatherFromLocalSourceWorld() = getDataFromLocalSource(false)
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun getDataFromLocalSource(isRus: Boolean = true) {
-        liveDataToObserve.value = AppState.Loading
-        val random = Random()
-        random.ints()
-        Thread {
-            sleep(2000)
-            if (true) {          //random.nextBoolean()
-                liveDataToObserve.postValue(
-                    AppState.Success(
-                        if (isRus) {
-                            repository.getWeatherFromLocalStorageRus()
-                        } else {
-                            repository.getWeatherFromLocalStorageWorld()
-                        }
-                    )
-                )
-            } else {
-                liveDataToObserve.postValue(AppState.Error(java.lang.RuntimeException("Loading data Error")))
-            }
-        }.start()
+    init {
+        refreshDataFromRepository()
     }
+
+    fun refreshDataFromRepository() {
+        liveDataToObserve.postValue(Loading)
+        viewModelScope.launch {
+            try {
+                weatherRepository.refreshWeatherList()
+                liveDataToObserve.postValue(Success(weatherList))
+            } catch (e: Exception) {
+                //if (liveDataToObserve.value == null) {
+                    Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
+                    liveDataToObserve.postValue(Error(e))
+                //}
+            }
+        }
+    }
+
+
 }

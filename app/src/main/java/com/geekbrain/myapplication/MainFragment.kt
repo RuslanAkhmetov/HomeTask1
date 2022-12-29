@@ -35,13 +35,11 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout for this fragment
         _binding = FragmentMainBinding.inflate(layoutInflater)
         return binding.root
     }
 
     companion object {
-
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
     }
@@ -55,7 +53,7 @@ class MainFragment : Fragment() {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
                     .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
-                        putString(DetailsFragment.BUNDLE_EXTRA, weather.city.city)
+                        putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
                     }))
                     .addToBackStack("")
                     .commitAllowingStateLoss()
@@ -67,13 +65,14 @@ class MainFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val observer = Observer<AppState> { renderData(it) }
+        val observer = Observer<AppState> {
+            renderData(it)
+        }
         binding.mainFragmentRecyclerView.adapter = adapter
         binding.mainFragmentFAB.setOnClickListener{
             changeWeatherDataSet()
         }
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
-        viewModel.getWeather()
 
     }
 
@@ -87,9 +86,10 @@ class MainFragment : Fragment() {
     private fun renderData(appState: AppState){
         when(appState) {
             is AppState.Success -> {
-                val weatherData = appState.weatherData
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData)
+                adapter.setWeather(appState.weatherData.filter {
+                        weather -> weather.city.isRus == isDataSetRus }
+                    .toList())
             }
 
             is AppState.Loading -> {
@@ -99,24 +99,25 @@ class MainFragment : Fragment() {
 
             is AppState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
+                Log.i(TAG, "renderData: ${appState.error.message}")
                 binding.mainFragmentFAB.showSnackbar(
-                    "Error",
+                    "Error"+appState.error,
                     "Reload",
-                    {viewModel.getWeather()}
+                    {viewModel.refreshDataFromRepository()}
                 )
             }
         }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.N)
     private fun changeWeatherDataSet(){
         if (isDataSetRus){
-            viewModel.getWeatherFromLocalSourceWorld()
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
         } else{
-            viewModel.getWeatherFromLocalSourceRus()
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
         }.also {  isDataSetRus = !isDataSetRus }
+        renderData(viewModel.getLiveData().value as AppState)
     }
 
     private fun View.showSnackbar(

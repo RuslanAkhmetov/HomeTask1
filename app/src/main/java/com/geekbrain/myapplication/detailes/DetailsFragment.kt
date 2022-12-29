@@ -2,7 +2,6 @@ package com.geekbrain.myapplication.detailes
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentDetailsBinding
-import com.geekbrain.myapplication.model.WeatherDTO
-import com.geekbrain.myapplication.viewmodel.CoordinatesLoader
-import com.geekbrain.myapplication.viewmodel.WeatherLoader
+import com.geekbrain.myapplication.model.Weather
 
 
 class DetailsFragment : Fragment() {
@@ -22,50 +19,17 @@ class DetailsFragment : Fragment() {
     private val binding
         get() = _binding!!
 
-    private val coordinatesLoaderListener =
-        object : CoordinatesLoader.CoordinateLoaderListener {
-            @RequiresApi(Build.VERSION_CODES.N)
-            override fun onLoaded(pos: String) {
 
-                val fl = pos.split(" ").map { it.toFloat() }
-                    lon = fl[0]
-                    lat = fl[1]
-                val loader = WeatherLoader(onLoaderListener, lat, lon)
-                loader.loaderWeather()
-            }
-
-            override fun onFailed(throwable: Throwable) {
-                // execute error
-            }
-
-        }
-
-    private val onLoaderListener: WeatherLoader.WeatherLoaderListener =
-        object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weatherDTO: WeatherDTO) {
-                displayWeather(weatherDTO)
-            }
-
-            override fun onFailed(throwable: Throwable) {
-                // execute error
-            }
-
-        }
-
-    private var city = "Москва"
-
-    private var lat = 55.755825F
-    private var lon = 37.6173f
+    private lateinit var weather: Weather
 
     private var item = 0
 
     companion object {
-        const val BUNDLE_EXTRA = "cityWeather"
+        const val BUNDLE_EXTRA = "CityWeather"
 
         fun newInstance(bundle: Bundle): DetailsFragment {
             val fragment = DetailsFragment()
             fragment.arguments = bundle
-
             return fragment
         }
     }
@@ -77,9 +41,7 @@ class DetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentDetailsBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
@@ -87,20 +49,13 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        city = arguments?.getString(BUNDLE_EXTRA) ?: "Москва"
-
-
+        val weatherNullable: Weather? = arguments?.getParcelable(BUNDLE_EXTRA)
+        weatherNullable?.let { weather = it }
 
         binding.mainView.visibility = View.GONE
         binding.loadingLayout.visibility = View.VISIBLE
         binding.HourlyForeCastRecyclerView.adapter = detailsFragmentAdapter
-
-        val coordinatesLoader = CoordinatesLoader(coordinatesLoaderListener, city)
-        coordinatesLoader.getCoordinates()
-        Log.i(TAG, "onViewCreated: city : $city lat: $lat lon $lon")
-
-
+        displayWeather(weather)
 
     }
 
@@ -109,41 +64,60 @@ class DetailsFragment : Fragment() {
         _binding = null
     }
 
-    private fun displayWeather(weatherDTO: WeatherDTO) {
+    private fun displayWeather(weather: Weather) {
         with(binding) {
             mainView.visibility = View.VISIBLE
             loadingLayout.visibility = View.GONE
 
-
-            cityName.text = city
+            cityName.text = weather.city.city
             cityCoordinates.text = String.format(
                 getString(R.string.city_coordinates),
-                lat.toString(),
-                lon.toString(),
+                weather.city.lat.toString(),
+                weather.city.lon.toString(),
             )
 
-            weatherCondition.text = weatherDTO.fact?.condition
-            temperatureValue.text = weatherDTO.fact?.temp.toString()
-            feelsLikeValue.text = weatherDTO.fact?.feelsLike.toString()
-            windSpeedValue.text = weatherDTO.fact?.windSpeed.toString()
-            windDirValue.text = weatherDTO.fact?.windDir
-            pressureValue.text = weatherDTO.fact?.pressureMm.toString()
-            humidityValue.text = weatherDTO.fact?.humidity.toString()
+            weatherCondition.text = weather.weatherDTO?.fact?.condition
+            temperatureValue.text = weather.weatherDTO?.fact?.temp.toString()
+            feelsLikeValue.text = weather.weatherDTO?.fact?.feelsLike.toString()
+            windSpeedValue.text = weather.weatherDTO?.fact?.windSpeed.toString()
+            windDirValue.text = weather.weatherDTO?.fact?.windDir
+            pressureValue.text = weather.weatherDTO?.fact?.pressureMm.toString()
+            humidityValue.text = weather.weatherDTO?.fact?.humidity.toString()
 
-            forecastDateValue.text = weatherDTO.forecasts[item]?.date
-            weatherDTO.forecasts[item]?.let { it1 ->
+            forecastDateValue.text = weather.weatherDTO?.forecasts?.get(item)?.date
+            weather.weatherDTO?.forecasts?.get(item)?.let { it1 ->
                 detailsFragmentAdapter.setHoursForecast(
                     it1.hours
                 )
+
             }
 
-            Log.i(TAG, "displayWeather: ${dateLeft.isClickable}")
             dateLeft.setOnClickListener {
+                var listSize = 0
+                weather.weatherDTO?.forecasts?.size?.let { listSize = it }
                 if (item - 1 >= 0) {
-                    item = --item % weatherDTO.forecasts.size
-                    Log.i(TAG, "setOnClickListener: $item")
-                    forecastDateValue.text = weatherDTO.forecasts[item]?.date
-                    weatherDTO.forecasts[item]?.let { it1 ->
+                    if (listSize != 0) {
+                        item = --item % listSize
+                        forecastDateValue.text =
+                            weather.weatherDTO?.forecasts?.get(item)?.date
+                        weather.weatherDTO?.forecasts?.get(item)?.let { it1 ->
+                            detailsFragmentAdapter.setHoursForecast(
+                                it1.hours
+                            )
+                        }
+                    }
+                }
+
+            }
+
+            dateRight.setOnClickListener {
+                var listSize: Int
+                weather.weatherDTO?.forecasts?.size?.let { listSize = it }
+                listSize = weather.weatherDTO!!.forecasts.size
+                if (listSize != 0) {
+                    item = ++item % listSize
+                    forecastDateValue.text = weather.weatherDTO?.forecasts?.get(item)?.date
+                    weather.weatherDTO?.forecasts?.get(item)?.let { it1 ->
                         detailsFragmentAdapter.setHoursForecast(
                             it1.hours
                         )
@@ -151,20 +125,10 @@ class DetailsFragment : Fragment() {
                 }
             }
 
-            dateRight.setOnClickListener {
-                item++
-                item %= weatherDTO.forecasts.size
-                Log.i(TAG, "setOnClickListener: $item")
-                forecastDateValue.text = weatherDTO.forecasts[item]?.date
-                weatherDTO.forecasts[item]?.let { it1 ->
-                    detailsFragmentAdapter.setHoursForecast(
-                        it1.hours
-                    )
-                }
-            }
-
         }
     }
+
+
 
 
 }

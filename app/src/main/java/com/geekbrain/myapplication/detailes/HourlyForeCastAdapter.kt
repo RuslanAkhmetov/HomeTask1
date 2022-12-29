@@ -6,11 +6,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.ImageLoader
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.model.Hours
 
+private val TAG ="HourlyForeCastAdapter"
+
 class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourViewHolder> () {
+
+
 
     private var dayForecast: List<Hours> = listOf()
 
@@ -32,9 +38,11 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
             hourlyPressureTextView.text = String.format("%d mm",hour.pressureMm)
             hourlyHumidityTextView.text = String.format("%d %%", hour.humidity)
 
-            Glide.with(itemView)
-                .load(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg.", hour.icon))
+            weatherIcon.loadSvg(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg", hour.icon))
+            /*Glide.with(itemView)
+                .load(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg", hour.icon))
                     .into(weatherIcon)
+            Log.i(TAG, "bind: ${hour.icon}")*/
         }
     }
 
@@ -51,4 +59,23 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
     override fun getItemCount(): Int = dayForecast.size
 
 
+
+}
+
+fun ImageView.loadSvg(url: String) {
+
+    val imageLoader = ImageLoader.Builder(this.context)
+        .componentRegistry { add(SvgDecoder(this@loadSvg.context)) }
+        .build()
+
+    val request = ImageRequest.Builder(this.context)
+        .crossfade(true)
+        .crossfade(500)
+        //.placeholder(R.drawable.ic_baseline_error_outline_24)
+        //.error(R.drawable.ic_baseline_error_outline_24)
+        .data(url)
+        .target(this)
+        .build()
+
+    imageLoader.enqueue(request)
 }
