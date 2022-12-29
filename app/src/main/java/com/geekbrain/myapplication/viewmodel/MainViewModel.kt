@@ -1,5 +1,7 @@
 package com.geekbrain.myapplication.viewmodel
 
+import android.app.Application
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -14,7 +16,7 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.N)
 class MainViewModel(
     private var liveDataToObserve: MutableLiveData<AppState> = MutableLiveData(),
-    private val weatherRepository: Repository = WeatherRepository()
+    private val weatherRepository: Repository = WeatherRepository.get()
 ) : ViewModel() {
 
     private val TAG = "MainViewModel"
