@@ -1,154 +1,171 @@
 package com.geekbrain.myapplication.repository
 
 import android.Manifest
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Context.LOCATION_SERVICE
-import android.content.Context.NOTIFICATION_SERVICE
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Build
-import android.widget.Toast
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.getSystemServiceName
 import com.geekbrain.myapplication.model.*
-import com.geekbrain.myapplication.viewmodel.CoordinatesLoader
-import com.geekbrain.myapplication.viewmodel.WeatherLoader
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.lang.Thread.sleep
+import java.util.Collections
 
+const val LOCATION = "location"
 
-
-class WeatherRepository private constructor(appContext: Context) : Repository {   //context Application
+class WeatherRepository private constructor(_context: Context) : Repository { //context Application
 
     private val TAG = "WeatherRepository"
 
-    private var listWeatherReceived: MutableList<Weather> = mutableListOf()
+    val context = _context
 
-    lateinit var locationManager: LocationManager
+    private var listWeatherSent: MutableList<Weather> = mutableListOf()
+    private var listWeatherReceived: MutableList<Weather> =
+        Collections.synchronizedList(mutableListOf())
 
-    private val locationPermissionCode = 2
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
 
-    companion object{
+    companion object {
         private var instance: WeatherRepository? = null
-        fun initialize(context: Context){
+        fun initialize(context: Context) {
             if (instance == null)
                 instance = WeatherRepository(context)
         }
 
-        fun get(): WeatherRepository{
-            return instance?: throw IllegalStateException("MovieRepository must be initialized")
+        fun get(): WeatherRepository {
+            return instance ?: throw IllegalStateException("MovieRepository must be initialized")
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     override suspend fun refreshWeatherList() {
-
         withContext(Dispatchers.IO) {
-            try {
-                //Add weather for current position
-                getWeatherForCurrentPosition()
-                getWeatherFromServer(getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld())
-            } catch (e: Exception){
-                throw e
+                try {
+                    listWeatherSent = (getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld()) as MutableList<Weather>
+                    getWeatherFromServer(listWeatherSent)
+
+                } catch (e: Exception) {
+                    throw e
+                }
+        }
+    }
+
+    /*@RequiresApi(Build.VERSION_CODES.N)
+    override suspend fun getWeatherForCurrentPosition() {
+        withContext(Dispatchers.IO) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            if (context.checkSelfPermission(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && context.checkSelfPermission(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Toast.makeText(
+                    context, "Application require Location Permission",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            val weatherCurrentPoint = Weather(City("CurrentPoint", true, null, null), null)
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener {
+                    Log.i(TAG, "getWeatherForCurrentPosition: $it")
+                    weatherCurrentPoint.city.lat = it?.latitude?.toFloat()
+                    weatherCurrentPoint.city.lon =
+                        it?.longitude?.toFloat()
+                    listWeatherSent.add(weatherCurrentPoint)
+                    listWeatherSent += getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld()
+
+                }
+
+            Log.i(TAG, "getWeatherForCurrentPosition: $weatherCurrentPoint")
+
+            // return weatherCurrentPoint
+
+        }
+    }*/
+
+
+
+        private val coordinatesLoaderListener =
+            object : CoordinatesLoader.CoordinateLoaderListener {
+                @RequiresApi(Build.VERSION_CODES.N)
+                override fun onLoaded(city: City) {
+                    WeatherLoader(onWeatherLoaderListener, city).apply {
+                        loaderWeather()
+                    }
+                }
+
+                override fun onFailed(throwable: Throwable) {
+                    Log.i(TAG, "CoordinatesLoaderFailed: " + throwable.message)
+                    throw throwable
+                }
+
             }
 
+        private val onWeatherLoaderListener: WeatherLoader.WeatherLoaderListener =
+            object : WeatherLoader.WeatherLoaderListener {
+                override fun onLoaded(weather: Weather) {
+                    listWeatherReceived.add(weather)
+                }
+
+                override fun onFailed(throwable: Throwable) {
+                    Log.i(TAG, "weatherLoaderFailed: " + throwable.message)
+                    throw throwable
+                }
+
+            }
+
+        @RequiresApi(Build.VERSION_CODES.N)
+        override fun getWeatherFromServer(listWeather: List<Weather>) {
+            synchronized(listWeather) {
+                Log.i(TAG, "getWeatherFromServer size of listweather: ${listWeather.size}")
+                for (weatherItem in listWeather) {
+                    try {
+                        if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
+                            CoordinatesLoader(coordinatesLoaderListener, weatherItem.city)
+                                .also {
+                                    it.getCoordinates()
+                                }
+                        } else {
+                            val loader = WeatherLoader(onWeatherLoaderListener, weatherItem.city)
+                            Log.i(TAG, "getWeatherFromServer: ${weatherItem.city}")
+                            loader.loaderWeather()
+                        }
+                    } catch (e: Exception) {
+                        Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
+                        throw e
+                    }
+                }
+                Log.i(TAG, "getWeatherFromServer: listWeatherReceived " + listWeatherReceived.size)
+            }
         }
-    }
 
-    override fun getWeatherForCurrentPosition() {
+        @RequiresApi(Build.VERSION_CODES.N)
+        fun getWeatherFromServer(weather: Weather) {
+            synchronized(listWeatherReceived) {
+                try {
+                    val loader = WeatherLoader(onWeatherLoaderListener, weather.city)
+                    Log.i(TAG, "getWeatherFromServer: ${weather.city}")
+                    loader.loaderWeather()
 
-    }
-
-    private fun getLocation(appContext: Context) {
-        locationManager =  appContext.getSystemService(LOCATION_SERVICE) as LocationManager
-        //locationManager =
-          //  getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((ContextCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED)
-        ) {
-            ActivityCompat.requestPermissions(
-                .. ,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                locationPermissionCode
-            )
-        }
-
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,5000,
-            500F,this)
-    }
-
-
-
-    override fun onLocationChanged(location: Location) {
-        TODO("Not yet implemented")
-    }
-
-    private val coordinatesLoaderListener =
-        object : CoordinatesLoader.CoordinateLoaderListener {
-            @RequiresApi(Build.VERSION_CODES.N)
-            override fun onLoaded(city: City) {
-                WeatherLoader(onLoaderListener, city).apply {
-                    loaderWeather()
+                } catch (e: Exception) {
+                    Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
+                    throw e
                 }
             }
 
-            override fun onFailed(throwable: Throwable) {
-                Log.i(TAG, "CoordinatesLoaderFailed: " + throwable.message)
-                throw throwable
-            }
-
         }
 
-    private val onLoaderListener: WeatherLoader.WeatherLoaderListener =
-        object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weather: Weather) {
-                listWeatherReceived.add(weather)
-            }
+        override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()
 
-            override fun onFailed(throwable: Throwable) {
-                Log.i(TAG, "weatherLoaderFailed: " + throwable.message)
-                throw throwable
-            }
+        override fun getWeatherFromLocalStorageWorld(): List<Weather> = getWorldCities()
 
-        }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    override fun getWeatherFromServer(listWeather: List<Weather>) {
-
-        for (weatherItem in listWeather) {
-            try{
-            if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
-                CoordinatesLoader(coordinatesLoaderListener, weatherItem.city)
-                    .also {
-                        it.getCoordinates()
-                    }
-            } else {
-                val loader = WeatherLoader(onLoaderListener, weatherItem.city)
-                loader.loaderWeather()
-            }
-            } catch (e: Exception){
-                Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
-                throw e
-            }
-        }
-        Log.i(TAG, "getWeatherFromServer: listWeatherReceived " + listWeatherReceived.size)
     }
-
-    override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()
-
-    override fun getWeatherFromLocalStorageWorld(): List<Weather> = getWorldCities()
-
-
-}

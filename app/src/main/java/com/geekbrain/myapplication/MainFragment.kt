@@ -14,6 +14,8 @@ import com.geekbrain.myapplication.databinding.FragmentMainBinding
 import com.geekbrain.myapplication.detailes.DetailsFragment
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.viewmodel.AppState
+import com.geekbrain.myapplication.viewmodel.CurrentPointState
+import com.geekbrain.myapplication.viewmodel.CurrentPointVieModel
 import com.geekbrain.myapplication.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 
@@ -25,6 +27,7 @@ class MainFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val TAG = "MainViewModel"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,8 @@ class MainFragment : Fragment() {
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
     }
+
+    private val viewModelCurrentPosition by viewModels<CurrentPointVieModel>()
 
     private val viewModel by viewModels<MainViewModel>()
 
@@ -65,20 +70,57 @@ class MainFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val currentPointWeatherObserver = Observer<CurrentPointState>{
+            fillCurrentPoint(it)
+        }
+
         val observer = Observer<AppState> {
             renderData(it)
         }
+
         binding.mainFragmentRecyclerView.adapter = adapter
         binding.mainFragmentFAB.setOnClickListener{
             changeWeatherDataSet()
         }
+
+        viewModel.getCurrentPointWeather()
+            .observe(viewLifecycleOwner, currentPointWeatherObserver)
+
         viewModel.getLiveData().observe(viewLifecycleOwner, observer)
 
     }
 
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun fillCurrentPoint(currentPointState: CurrentPointState) {
+        when(currentPointState){
+            is CurrentPointState.Success -> {
+                binding.mainFragmentLoadingLayout.visibility = View.GONE
+                binding.currentPoint
+                    .mainFragmentRecyclerItemTextView
+                    .text = "${currentPointState.weatherData.city.city}   " +
+                        "${currentPointState.weatherData.weatherDTO?.fact?.temp.toString()}"
+            }
+            is CurrentPointState.Loading -> {
+                binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
+            }
+            is CurrentPointState.Error ->{
+                binding.mainFragmentLoadingLayout.visibility = View.GONE
+                Log.i(TAG, "renderData: ${currentPointState.error.message}")
+                binding.mainFragmentFAB.showSnackbar(
+                    "Error"+currentPointState.error,
+                    "Reload",
+                    {viewModel.startMainViewModel()}
+                )
+            }
+        }
 
     }
 
@@ -103,7 +145,7 @@ class MainFragment : Fragment() {
                 binding.mainFragmentFAB.showSnackbar(
                     "Error"+appState.error,
                     "Reload",
-                    {viewModel.refreshDataFromRepository()}
+                    {viewModel.startMainViewModel()}
                 )
             }
         }

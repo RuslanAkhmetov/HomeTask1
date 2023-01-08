@@ -1,6 +1,7 @@
-package com.geekbrain.myapplication.viewmodel
+package com.geekbrain.myapplication.repository
 
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.geekbrain.myapplication.BuildConfig
@@ -8,6 +9,7 @@ import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.model.WeatherDTO
 import com.google.gson.Gson
+import kotlinx.coroutines.handleCoroutineException
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -30,6 +32,7 @@ open class WeatherLoader(
 
     @RequiresApi(Build.VERSION_CODES.N)
     fun loaderWeather() =
+
         try {
             val uri =
                 URL(
@@ -46,24 +49,30 @@ open class WeatherLoader(
                     addRequestProperty("X-Yandex-API-Key", BuildConfig.WEATHER_API_KEY)
                     readTimeout = 10000
                 }
-                val inputStream: InputStream
-                val bufferedReader: BufferedReader
-                if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
-                    inputStream = urlConnection.errorStream
-                    Log.i(TAG, "loadWeather: " + urlConnection.responseCode + inputStream)
-                    throw RuntimeException("Can't connect to ${uri.toString()}")
-                } else {
-                    bufferedReader =
-                        BufferedReader(InputStreamReader(urlConnection.inputStream))
-                }
-                val weatherDTO: WeatherDTO =
-                    Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
-                val weather = city?.let { Weather(it, weatherDTO) }
-                if (weather != null) {
-                    listener.onLoaded(weather)
-                } else {
-                    throw RuntimeException("WeatherDTO is not loaded")
-                }
+                val handler = Handler()
+                Thread {
+                    val inputStream: InputStream
+                    val bufferedReader: BufferedReader
+                    Log.i(TAG, "loaderWeather: $uri")
+                    if (urlConnection.responseCode != HttpsURLConnection.HTTP_OK) {
+                        inputStream = urlConnection.errorStream
+                        Log.i(TAG, "loadWeather: " + urlConnection.responseCode + inputStream)
+                        throw RuntimeException("Can't connect to ${uri}")
+                    } else {
+                        bufferedReader =
+                            BufferedReader(InputStreamReader(urlConnection.inputStream))
+                    }
+                    val weatherDTO: WeatherDTO =
+                        Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
+                    val weather = city?.let { Weather(it, weatherDTO) }
+                    if (weather != null) {
+                        handler.post {
+                            listener.onLoaded(weather)
+                        }
+                    } else {
+                        throw RuntimeException("WeatherDTO is not loaded")
+                    }
+                }.start()
             } catch (e: Exception) {
                 Log.e(TAG, "Fail connection ", e)
                 e.printStackTrace()
