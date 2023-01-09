@@ -15,7 +15,6 @@ import com.geekbrain.myapplication.detailes.DetailsFragment
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.viewmodel.AppState
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
-import com.geekbrain.myapplication.viewmodel.CurrentPointVieModel
 import com.geekbrain.myapplication.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 
@@ -47,13 +46,11 @@ class MainFragment : Fragment() {
         fun newInstance(): MainFragment = MainFragment()
     }
 
-    private val viewModelCurrentPosition by viewModels<CurrentPointVieModel>()
-
     private val viewModel by viewModels<MainViewModel>()
 
     private var isDataSetRus: Boolean = true
 
-    private val adapter = MainFragmentAdapter(object : MainFragmentAdapter.OnItemViewClickListener{
+    private val adapter = MainFragmentAdapter(object : MainFragmentAdapter.OnItemViewClickListener {
         override fun OnItemClick(weather: Weather) {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
@@ -71,23 +68,41 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val currentPointWeatherObserver = Observer<CurrentPointState>{
+        val currentPointWeatherObserver = Observer<CurrentPointState> {
             fillCurrentPoint(it)
+            if (it is CurrentPointState.Success) {
+                savedInstanceState?.putParcelable(DetailsFragment.BUNDLE_EXTRA, it.weatherData)
+            }
         }
 
         val observer = Observer<AppState> {
             renderData(it)
         }
 
+        binding.currentPoint.mainFragmentRecyclerItemTextView.setOnClickListener {
+            if(viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
+                val currentPointWeather = (viewModel.getCurrentPointWeather().value as CurrentPointState.Success).weatherData
+                activity?.supportFragmentManager?.apply {
+                    beginTransaction()
+                        .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
+                            putParcelable(DetailsFragment.BUNDLE_EXTRA, currentPointWeather)
+                        }))
+                        .addToBackStack("")
+                        .commitAllowingStateLoss()
+                }
+            }
+        }
+
         binding.mainFragmentRecyclerView.adapter = adapter
-        binding.mainFragmentFAB.setOnClickListener{
+        binding.mainFragmentFAB.setOnClickListener {
             changeWeatherDataSet()
         }
+
+        viewModel.getLiveData().observe(viewLifecycleOwner, observer)
 
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
 
-        viewModel.getLiveData().observe(viewLifecycleOwner, observer)
 
     }
 
@@ -100,24 +115,24 @@ class MainFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun fillCurrentPoint(currentPointState: CurrentPointState) {
-        when(currentPointState){
+        when (currentPointState) {
             is CurrentPointState.Success -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 binding.currentPoint
                     .mainFragmentRecyclerItemTextView
-                    .text = "${currentPointState.weatherData.city.city}   " +
-                        "${currentPointState.weatherData.weatherDTO?.fact?.temp.toString()}"
+                    .text = "${currentPointState.weatherData.city.city} " +
+                        "${currentPointState.weatherData.weatherDTO?.fact?.temp}"
             }
             is CurrentPointState.Loading -> {
                 binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
             }
-            is CurrentPointState.Error ->{
+            is CurrentPointState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${currentPointState.error.message}")
                 binding.mainFragmentFAB.showSnackbar(
-                    "Error"+currentPointState.error,
+                    "Error" + currentPointState.error,
                     "Reload",
-                    {viewModel.startMainViewModel()}
+                    { viewModel.startMainViewModel() }
                 )
             }
         }
@@ -125,12 +140,11 @@ class MainFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun renderData(appState: AppState){
-        when(appState) {
+    private fun renderData(appState: AppState) {
+        when (appState) {
             is AppState.Success -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData.filter {
-                        weather -> weather.city.isRus == isDataSetRus }
+                adapter.setWeather(appState.weatherData.filter { weather -> weather.city.isRus == isDataSetRus }
                     .toList())
             }
 
@@ -143,9 +157,9 @@ class MainFragment : Fragment() {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${appState.error.message}")
                 binding.mainFragmentFAB.showSnackbar(
-                    "Error"+appState.error,
+                    "Error" + appState.error,
                     "Reload",
-                    {viewModel.startMainViewModel()}
+                    { viewModel.startMainViewModel() }
                 )
             }
         }
@@ -153,12 +167,12 @@ class MainFragment : Fragment() {
 
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun changeWeatherDataSet(){
-        if (isDataSetRus){
+    private fun changeWeatherDataSet() {
+        if (isDataSetRus) {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
-        } else{
+        } else {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
-        }.also {  isDataSetRus = !isDataSetRus }
+        }.also { isDataSetRus = !isDataSetRus }
         renderData(viewModel.getLiveData().value as AppState)
     }
 
@@ -167,8 +181,8 @@ class MainFragment : Fragment() {
         actionText: String,
         action: (View) -> Unit,
         length: Int = Snackbar.LENGTH_INDEFINITE
-    ){
-        Snackbar.make(this, text,length).setAction(actionText, action).show()
+    ) {
+        Snackbar.make(this, text, length).setAction(actionText, action).show()
     }
 
 

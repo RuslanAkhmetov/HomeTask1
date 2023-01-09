@@ -1,11 +1,7 @@
 package com.geekbrain.myapplication
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,8 +11,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.geekbrain.myapplication.databinding.ActivityMainBinding
-import com.geekbrain.myapplication.repository.LOCATION
-import com.geekbrain.myapplication.repository.WeatherRepository
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -53,12 +47,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onStart() {
-        super.onStart()
-
-    }
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -75,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    private fun requestPermissions(): Unit {
+    private fun requestPermissions() {
         val shouldProvideRationale =
         ActivityCompat.shouldShowRequestPermissionRationale(this,
             Manifest.permission.ACCESS_FINE_LOCATION)

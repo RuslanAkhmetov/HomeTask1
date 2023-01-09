@@ -13,7 +13,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.geekbrain.myapplication.MainActivity
 import com.geekbrain.myapplication.utils.Utils
 import com.google.android.gms.location.*
-import com.google.android.gms.tasks.OnCompleteListener
 
 const val PACKAGE_NAME =
     "com.geekbrain.myapplication.repository.locationupdatesforegroundservice"
@@ -200,10 +199,10 @@ class LocationUpdatesService : Service() {
      * {@link SecurityException}.
      */
     @SuppressLint("MissingPermission")
-    fun requestLocationUpdates() {
+    fun requestLocationUpdates(context: Context) {
         Log.i(TAG, "Requesting location updates")
-        Utils.setRequestingLocationUpdates(this, true)
-        startService(Intent(getApplicationContext(), LocationUpdatesService::class.java))
+        Utils.setRequestingLocationUpdates(context, true)
+        startService(Intent(context, LocationUpdatesService::class.java))
         Log.i(TAG, "requestLocationUpdates: ")
         try {
             mFusedLocationClient.requestLocationUpdates(

@@ -64,7 +64,6 @@ class LocationRepository private constructor(private val appContext: Context) :
     // Tracks the bound state of the service.
     private var mBound = false
 
-    fun getLocation() = mLocation
 
     // Monitors the state of the connection to the service.
     private val mServiceConnection = object : ServiceConnection {
@@ -94,7 +93,7 @@ class LocationRepository private constructor(private val appContext: Context) :
                 Context.BIND_AUTO_CREATE
             )
 
-            mService?.requestLocationUpdates()
+            mService?.requestLocationUpdates(appContext)
 
             Log.i(TAG, "startLocationService: ")
 
@@ -108,54 +107,6 @@ class LocationRepository private constructor(private val appContext: Context) :
 
     }
 
-
-
-
-/*    private fun requestPermissions(
-        appContext: Context,
-        arrayOf: Array<String>,
-        REQUEST_PERMISSIONS_REQUEST_CODE: Any?
-    ) {
-        val shouldProvideRationale =
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                ,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-
-        // Provide an additional rationale to the user. This would happen if the user denied the
-        // request previously, but didn't check the "Don't ask again" checkbox.
-        if (shouldProvideRationale) {
-            Log.i(TAG, "Displaying permission rationale to provide additional context.");
-            Snackbar.make(
-                findViewById(R.id.mainFragmentFAB),
-                R.string.permission_rationale,
-                Snackbar.LENGTH_INDEFINITE
-            )
-                .setAction(R.string.ok, View.OnClickListener() {
-
-                    onClick(view: View) {
-                        // Request permission
-                        ActivityCompat.requestPermissions(
-                            MainActivity.this,
-                            new String []{ Manifest.permission.ACCESS_FINE_LOCATION },
-                            REQUEST_PERMISSIONS_REQUEST_CODE
-                        );
-                    }
-                })
-                .show();
-        } else {
-            Log.i(TAG, "Requesting permission");
-            // Request permission. It's possible this can be auto answered if device policy
-            // sets the permission in a given state or the user denied the permission
-            // previously and checked "Never ask again".
-
-            requestPermissions(
-                this.appContext,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_PERMISSIONS_REQUEST_CODE
-            );
-        }
-    }*/
 
     /**
      * Receiver for broadcasts sent by {@link LocationUpdatesService}.

@@ -1,21 +1,12 @@
 package com.geekbrain.myapplication.repository
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.geekbrain.myapplication.model.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.lang.Thread.sleep
 import java.util.Collections
 
-const val LOCATION = "location"
 
 class WeatherRepository private constructor(_context: Context) : Repository { //context Application
 
@@ -26,8 +17,6 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
     private var listWeatherSent: MutableList<Weather> = mutableListOf()
     private var listWeatherReceived: MutableList<Weather> =
         Collections.synchronizedList(mutableListOf())
-
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 
     override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
@@ -45,8 +34,8 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override suspend fun refreshWeatherList() {
-        withContext(Dispatchers.IO) {
+    override fun refreshWeatherList() {
+        //withContext(Dispatchers.IO) {
                 try {
                     listWeatherSent = (getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld()) as MutableList<Weather>
                     getWeatherFromServer(listWeatherSent)
@@ -54,7 +43,7 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
                 } catch (e: Exception) {
                     throw e
                 }
-        }
+        //}
     }
 
     /*@RequiresApi(Build.VERSION_CODES.N)
