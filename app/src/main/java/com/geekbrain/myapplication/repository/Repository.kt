@@ -9,5 +9,6 @@ interface Repository {
     fun getWeatherFromLocalStorageRus(): List<Weather>
     fun getWeatherFromLocalStorageWorld(): List<Weather>
     @RequiresApi(value = 24)
-    suspend fun refreshWeatherList()
+    fun refreshWeatherList()
+   // suspend fun getWeatherForCurrentPosition() //: Weather
 }

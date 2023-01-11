@@ -6,7 +6,7 @@ import android.os.Parcelable
 import androidx.annotation.RequiresApi
 
 data class City(
-    val city: String?,
+    var city: String?,
     val isRus: Boolean?,
     var lat: Float?,
     var lon: Float?

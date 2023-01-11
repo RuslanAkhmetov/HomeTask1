@@ -1,5 +1,19 @@
 <resources>
-    <string name="app_name">AndroidKotlinApp 5</string>
+    <string name="app_name">AndroidKotlinApp 6</string>
+
+    <string name="launch_activity" translatable="false">Launch activity</string>
+    <string name="location_unknown" translatable="false">Location unknown</string>
+    <string name="location_updates_label" translatable="false">Location Updates</string>
+
+    <string name="permission_rationale" translatable="false">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation" translatable="false">Permission was denied, but is needed for core
+        functionality.</string>
+    <string name="settings" translatable="false">Settings</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="request_location_updates" translatable="false">Request location updates</string>
+    <string name="remove_location_updates" translatable="false">Remove location updates</string>
+
+    <string name="location_updated" translatable="false">Location Updated: %1$s</string>
 
     <string name="temperature_label">Temperature, C</string>
     <string name="feels_like_label">Feels like</string>
@@ -11,7 +25,7 @@
     <string name="pressure_label">Pressure, mm</string>
     <string name="humidity_label">Humidity %</string>
     <string name="forecast_date_label">Forecast to</string>
-    <string name="min_temperature_label">Min temetrature, C</string>
+    <string name="min_temperature_label">Min temperature, C</string>
     <string name="max_temperature_label">Maximum Temperature C</string>
     <string name="morning">Morning</string>
     <string name="day">Day</string>

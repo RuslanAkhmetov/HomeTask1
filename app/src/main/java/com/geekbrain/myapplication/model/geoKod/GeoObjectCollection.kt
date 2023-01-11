@@ -1,4 +1,4 @@
-package com.geekbrain.myapplication.model
+package com.geekbrain.myapplication.model.geoKod
 
 import com.google.gson.annotations.SerializedName
 
