@@ -1,5 +1,13 @@
 package com.geekbrain.myapplication
 
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.CONNECTIVITY_ACTION
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -7,7 +15,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.geekbrain.myapplication.databinding.FragmentMainBinding
@@ -27,19 +39,8 @@ class MainFragment : Fragment() {
 
     private val TAG = "MainViewModel"
 
+    private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMainBinding.inflate(layoutInflater)
-        return binding.root
-    }
 
     companion object {
         @JvmStatic
@@ -49,6 +50,35 @@ class MainFragment : Fragment() {
     private val viewModel by viewModels<MainViewModel>()
 
     private var isDataSetRus: Boolean = true
+
+    val connectivityActionReceiver = ConnectivityActionReceiver()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMainBinding.inflate(layoutInflater)
+        if (!checkPermission()) {
+            requestPermissions()
+        }
+
+        context?.let {
+            registerReceiver(
+                it,
+                connectivityActionReceiver,
+                IntentFilter(CONNECTIVITY_ACTION),
+                ContextCompat.RECEIVER_EXPORTED)
+        }
+
+            return binding.root
+
+    }
 
     private val adapter = MainFragmentAdapter(object : MainFragmentAdapter.OnItemViewClickListener {
         override fun OnItemClick(weather: Weather) {
@@ -70,18 +100,23 @@ class MainFragment : Fragment() {
 
         val currentPointWeatherObserver = Observer<CurrentPointState> {
             fillCurrentPoint(it)
-            if (it is CurrentPointState.Success) {
-                savedInstanceState?.putParcelable(DetailsFragment.BUNDLE_EXTRA, it.weatherData)
-            }
         }
 
         val observer = Observer<AppState> {
             renderData(it)
         }
 
+        if (!checkPermission()) {
+            binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.GONE
+        } else {
+            binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
+        }
+
         binding.currentPoint.mainFragmentRecyclerItemTextView.setOnClickListener {
-            if(viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
-                val currentPointWeather = (viewModel.getCurrentPointWeather().value as CurrentPointState.Success).weatherData
+            if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
+                val currentPointWeather =
+                    (viewModel.getCurrentPointWeather().value as CurrentPointState.Success)
+                        .weatherCurrentPoint
                 activity?.supportFragmentManager?.apply {
                     beginTransaction()
                         .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
@@ -94,6 +129,7 @@ class MainFragment : Fragment() {
         }
 
         binding.mainFragmentRecyclerView.adapter = adapter
+
         binding.mainFragmentFAB.setOnClickListener {
             changeWeatherDataSet()
         }
@@ -102,7 +138,6 @@ class MainFragment : Fragment() {
 
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
-
 
     }
 
@@ -117,11 +152,16 @@ class MainFragment : Fragment() {
     private fun fillCurrentPoint(currentPointState: CurrentPointState) {
         when (currentPointState) {
             is CurrentPointState.Success -> {
+                binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 binding.currentPoint
                     .mainFragmentRecyclerItemTextView
-                    .text = "${currentPointState.weatherData.city.city} " +
-                        "${currentPointState.weatherData.weatherDTO?.fact?.temp}"
+                    .text =
+                    currentPointState.weatherCurrentPoint.city.city?.let {
+                        String.format(
+                            it, " ",
+                            "currentPointState.weatherCurrentPoint.weatherDTO?.fact?.temp")
+                    }
             }
             is CurrentPointState.Loading -> {
                 binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
@@ -176,6 +216,74 @@ class MainFragment : Fragment() {
         renderData(viewModel.getLiveData().value as AppState)
     }
 
+    private fun checkPermission() =
+        context?.let {
+            ContextCompat.checkSelfPermission(
+                it, Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        } == PackageManager.PERMISSION_GRANTED
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun requestPermissions() {
+        val shouldProvideRationale =
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+
+
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.")
+
+            Snackbar.make(
+                requireActivity().findViewById(R.id.container),
+                R.string.permission_rationale,
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction(
+                    R.string.ok,
+                ) {
+                    // Request permission
+                    ActivityCompat.requestPermissions(
+                        requireActivity(),
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        REQUEST_PERMISSIONS_REQUEST_CODE,
+                    )
+                }.show()
+
+        } else {
+            Log.i(TAG, "Requesting permission")
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            //ActivityCompat.
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_PERMISSIONS_REQUEST_CODE,
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.i(TAG, "onRequestPermissionsResult: $requestCode")
+        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+                binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
+            } else {
+                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.GONE
+            }
+        }
+    }
+
     private fun View.showSnackbar(
         text: String,
         actionText: String,
@@ -185,5 +293,18 @@ class MainFragment : Fragment() {
         Snackbar.make(this, text, length).setAction(actionText, action).show()
     }
 
+    inner class ConnectivityActionReceiver: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val noConnection =
+                intent?.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)
+            if(noConnection == true) {
+                Toast.makeText(context, "Connection Lost", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Connection Found", Toast.LENGTH_LONG).show()
+            }
+
+        }
+
+    }
 
 }

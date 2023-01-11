@@ -35,7 +35,6 @@ class MainViewModel(
     }
 
     fun startMainViewModel(){
-
         viewModelScope.launch {
             locationRepository.startLocationService()
             refreshDataFromRepository()

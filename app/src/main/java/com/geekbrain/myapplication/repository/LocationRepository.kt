@@ -11,11 +11,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.model.Weather
-import com.geekbrain.myapplication.utils.Utils
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
 
-class LocationRepository private constructor(private val appContext: Context) :
-    SharedPreferences.OnSharedPreferenceChangeListener {   //ApplicationContext
+class LocationRepository private constructor(private val appContext: Context) {   //ApplicationContext
     companion object {
         private var instance: LocationRepository? = null
 
@@ -24,31 +22,22 @@ class LocationRepository private constructor(private val appContext: Context) :
                 instance = LocationRepository(context)
 
             }
-
         }
 
         fun get() =
             instance ?: throw java.lang.RuntimeException("LocationRepository is not initialized")
     }
 
-    interface LocationLoaderListener {
-        fun onLoaded(location: Location)
-    }
 
     var weatherCurrentPointStateLiveData: MutableLiveData<CurrentPointState> = MutableLiveData()
 
-    var  weatherCurrentPointState = CurrentPointState
+    var weatherCurrentPointState = CurrentPointState
         .Success(
             Weather(
                 City("Current Point", true, null, null),
-                null))
-
-   /* init {
-        startLocationService()
-    }*/
-
-    fun getRepositoryContext(): Context = appContext
-
+                null
+            )
+        )
 
     private val TAG = LocationRepository::class.java.simpleName
 
@@ -72,9 +61,7 @@ class LocationRepository private constructor(private val appContext: Context) :
             mService = binder.getService()
             mBound = true
             Log.i(TAG, "onServiceConnected: ")
-
         }
-
 
         override fun onServiceDisconnected(name: ComponentName?) {
             mService = null
@@ -84,27 +71,24 @@ class LocationRepository private constructor(private val appContext: Context) :
 
 
     fun startLocationService() {
+        // Bind to the service. If the service is in foreground mode, this signals to the service
+        // that since this activity is in the foreground, the service can exit foreground mode.
+        appContext.bindService(
+            Intent(appContext, LocationUpdatesService::class.java),
+            mServiceConnection,
+            Context.BIND_AUTO_CREATE
+        )
 
-            // Bind to the service. If the service is in foreground mode, this signals to the service
-            // that since this activity is in the foreground, the service can exit foreground mode.
-            appContext.bindService(
-                Intent(appContext, LocationUpdatesService::class.java),
-                mServiceConnection,
-                Context.BIND_AUTO_CREATE
-            )
+        mService?.requestLocationUpdates(appContext)
 
-            mService?.requestLocationUpdates(appContext)
+        Log.i(TAG, "startLocationService: ")
 
-            Log.i(TAG, "startLocationService: ")
-
-            LocalBroadcastManager.getInstance(appContext)
-                .registerReceiver(
-                    myReceiver, IntentFilter(
-                        ACTION_BROADCAST
-                    )
+        LocalBroadcastManager.getInstance(appContext)
+            .registerReceiver(
+                myReceiver, IntentFilter(
+                    ACTION_BROADCAST
                 )
-
-
+            )
     }
 
 
@@ -122,56 +106,48 @@ class LocationRepository private constructor(private val appContext: Context) :
             Log.i(TAG, "onReceive: $mLocation")
 
             val loaderCityName = CoordinatesLoader(
-                    coordinatesLoaderListener,
-                    City(
-                        "Current Point",
-                        true,
-                        mLocation?.latitude?.toFloat(),
-                        mLocation?.longitude?.toFloat()
-                    )
+                coordinatesLoaderListener,
+                City(
+                    "Current Point",
+                    true,
+                    mLocation?.latitude?.toFloat(),
+                    mLocation?.longitude?.toFloat()
                 )
-                loaderCityName.getCityName()
+            )
+            loaderCityName.getCityName()
+        }
+    }
+
+    private val coordinatesLoaderListener =
+        object : CoordinatesLoader.CoordinateLoaderListener {
+            @RequiresApi(Build.VERSION_CODES.N)
+            override fun onLoaded(city: City) {
+                WeatherLoader(onWeatherLoaderListener, city).apply {
+                    loaderWeather()
+                }
+            }
+
+            override fun onFailed(throwable: Throwable) {
+                Log.i(TAG, "CoordinatesLoaderFailed: " + throwable.message)
+                throw throwable
+            }
 
         }
 
-        private val coordinatesLoaderListener =
-            object : CoordinatesLoader.CoordinateLoaderListener {
-                @RequiresApi(Build.VERSION_CODES.N)
-                override fun onLoaded(city: City) {
-                    WeatherLoader(onWeatherLoaderListener, city).apply {
-                        loaderWeather()
-                    }
-                }
-
-                override fun onFailed(throwable: Throwable) {
-                    Log.i(TAG, "CoordinatesLoaderFailed: " + throwable.message)
-                    throw throwable
-                }
-
+    private val onWeatherLoaderListener: WeatherLoader.WeatherLoaderListener =
+        object : WeatherLoader.WeatherLoaderListener {
+            override fun onLoaded(weather: Weather) {
+                weatherCurrentPointState =
+                    CurrentPointState.Success(weather)
+                weatherCurrentPointStateLiveData.value = weatherCurrentPointState
             }
 
-        private val onWeatherLoaderListener: WeatherLoader.WeatherLoaderListener =
-            object : WeatherLoader.WeatherLoaderListener {
-                override fun onLoaded(weather: Weather) {
-                    weatherCurrentPointState =
-                        CurrentPointState.Success(weather)
-                    weatherCurrentPointStateLiveData.value = weatherCurrentPointState
-                }
-
-                override fun onFailed(throwable: Throwable) {
-                    Log.i(TAG, "weatherLoaderFailed: " + throwable.message)
-                    throw throwable
-                }
-
+            override fun onFailed(throwable: Throwable) {
+                Log.i(TAG, "weatherLoaderFailed: " + throwable.message)
+                throw throwable
             }
-
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == Utils.KEY_REQUESTING_LOCATION_UPDATES) {
 
         }
-    }
 
 
 }

@@ -35,8 +35,14 @@
         <service
             android:name=".repository.LocationUpdatesService"
             android:enabled="true"
-            android:exported="true" />
-        
+            android:exported="false" />
+
+        <receiver android:name=".MainFragment$ConnectivityActionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="CONNECTIVITY_ACTION"/>
+            </intent-filter>
+        </receiver>
 
     </application>
 
