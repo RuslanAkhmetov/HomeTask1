@@ -51,7 +51,7 @@ class MainFragment : Fragment() {
 
     private var isDataSetRus: Boolean = true
 
-    val connectivityActionReceiver = ConnectivityActionReceiver()
+    private val connectivityActionReceiver = ConnectivityActionReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,7 +102,7 @@ class MainFragment : Fragment() {
             fillCurrentPoint(it)
         }
 
-        val observer = Observer<AppState> {
+        val listWeatherObserver = Observer<AppState> {
             renderData(it)
         }
 
@@ -134,7 +134,8 @@ class MainFragment : Fragment() {
             changeWeatherDataSet()
         }
 
-        viewModel.getLiveData().observe(viewLifecycleOwner, observer)
+        viewModel.getWeatherListLiveData()
+            .observe(viewLifecycleOwner, listWeatherObserver)
 
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
@@ -184,7 +185,7 @@ class MainFragment : Fragment() {
         when (appState) {
             is AppState.Success -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData.filter { weather -> weather.city.isRus == isDataSetRus }
+                adapter.setWeather(appState.weatherList.filter { weather -> weather.city.isRus == isDataSetRus }
                     .toList())
             }
 
@@ -213,7 +214,7 @@ class MainFragment : Fragment() {
         } else {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
         }.also { isDataSetRus = !isDataSetRus }
-        renderData(viewModel.getLiveData().value as AppState)
+        renderData(viewModel.getWeatherListLiveData().value as AppState)
     }
 
     private fun checkPermission() =
@@ -284,15 +285,6 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun View.showSnackbar(
-        text: String,
-        actionText: String,
-        action: (View) -> Unit,
-        length: Int = Snackbar.LENGTH_INDEFINITE
-    ) {
-        Snackbar.make(this, text, length).setAction(actionText, action).show()
-    }
-
     inner class ConnectivityActionReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             val noConnection =
@@ -305,6 +297,15 @@ class MainFragment : Fragment() {
 
         }
 
+    }
+
+    private fun View.showSnackbar(
+        text: String,
+        actionText: String,
+        action: (View) -> Unit,
+        length: Int = Snackbar.LENGTH_INDEFINITE
+    ) {
+        Snackbar.make(this, text, length).setAction(actionText, action).show()
     }
 
 }

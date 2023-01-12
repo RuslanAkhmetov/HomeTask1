@@ -114,7 +114,7 @@ class LocationRepository private constructor(private val appContext: Context) { 
                     mLocation?.longitude?.toFloat()
                 )
             )
-            loaderCityName.getCityName()
+            loaderCityName.getGeoKod(1)
         }
     }
 
@@ -148,7 +148,6 @@ class LocationRepository private constructor(private val appContext: Context) { 
             }
 
         }
-
 
 }
 
