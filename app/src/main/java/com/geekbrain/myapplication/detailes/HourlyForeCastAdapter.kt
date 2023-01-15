@@ -10,16 +10,16 @@ import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.geekbrain.myapplication.R
-import com.geekbrain.myapplication.model.Hours
+import com.geekbrain.myapplication.model.weatherDTO.Hours
 
-private val TAG ="HourlyForeCastAdapter"
+private const val TAG ="HourlyForeCastAdapter"
 
-class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourViewHolder> () {
+class HourlyForeCastAdapter : RecyclerView.Adapter<HourlyForeCastAdapter.HourViewHolder> () {
 
     private var dayForecast: List<Hours> = listOf()
 
     fun setHoursForecast(arrayWithHourForecast: List<Hours?>){
-        dayForecast = arrayWithHourForecast?.let { it } as List<Hours>
+        dayForecast = arrayWithHourForecast as List<Hours>
         notifyDataSetChanged()
     }
 

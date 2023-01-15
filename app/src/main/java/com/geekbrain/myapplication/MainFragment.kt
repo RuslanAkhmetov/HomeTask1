@@ -37,7 +37,7 @@ class MainFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val TAG = "MainViewModel"
+    private val TAG = "MainFragment"
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
@@ -52,10 +52,6 @@ class MainFragment : Fragment() {
     private var isDataSetRus: Boolean = true
 
     private val connectivityActionReceiver = ConnectivityActionReceiver()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -116,7 +112,7 @@ class MainFragment : Fragment() {
             if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
                 val currentPointWeather =
                     (viewModel.getCurrentPointWeather().value as CurrentPointState.Success)
-                        .weatherCurrentPoint
+                        .weatherInCurrentPoint
                 activity?.supportFragmentManager?.apply {
                     beginTransaction()
                         .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
@@ -158,11 +154,10 @@ class MainFragment : Fragment() {
                 binding.currentPoint
                     .mainFragmentRecyclerItemTextView
                     .text =
-                    currentPointState.weatherCurrentPoint.city.city?.let {
-                        String.format(
-                            it, " ",
-                            "currentPointState.weatherCurrentPoint.weatherDTO?.fact?.temp")
+                    currentPointState.weatherInCurrentPoint.city.city?.let {
+                        "$it  ${currentPointState.weatherInCurrentPoint.weatherDTO?.fact?.temp.toString()} C"
                     }
+
             }
             is CurrentPointState.Loading -> {
                 binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
@@ -170,7 +165,7 @@ class MainFragment : Fragment() {
             is CurrentPointState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${currentPointState.error.message}")
-                binding.mainFragmentFAB.showSnackbar(
+                binding.mainFragmentFAB.showSnackBar(
                     "Error" + currentPointState.error,
                     "Reload",
                     { viewModel.startMainViewModel() }
@@ -185,7 +180,8 @@ class MainFragment : Fragment() {
         when (appState) {
             is AppState.Success -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherList.filter { weather -> weather.city.isRus == isDataSetRus }
+                adapter.setWeather(appState.weatherList
+                    .filter { weather -> weather.city.isRus == isDataSetRus }
                     .toList())
             }
 
@@ -197,7 +193,7 @@ class MainFragment : Fragment() {
             is AppState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${appState.error.message}")
-                binding.mainFragmentFAB.showSnackbar(
+                binding.mainFragmentFAB.showSnackBar(
                     "Error" + appState.error,
                     "Reload",
                     { viewModel.startMainViewModel() }
@@ -299,7 +295,7 @@ class MainFragment : Fragment() {
 
     }
 
-    private fun View.showSnackbar(
+    private fun View.showSnackBar(
         text: String,
         actionText: String,
         action: (View) -> Unit,

@@ -205,6 +205,7 @@
             app:layout_constraintStart_toEndOf="@id/forecastDateLabel"
             app:layout_constraintTop_toBottomOf="@id/humidityValue"
             android:src="@drawable/ic_baseline_chevron_left_24"
+            android:contentDescription="day_before"
             />
 
         <TextView
@@ -227,6 +228,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/humidityValue"
             android:src="@drawable/ic_baseline_chevron_right_24"
+            android:contentDescription="day_after"
             />
 
         <androidx.recyclerview.widget.RecyclerView

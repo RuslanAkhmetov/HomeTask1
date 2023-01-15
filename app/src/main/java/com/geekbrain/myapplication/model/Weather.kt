@@ -1,6 +1,7 @@
 package com.geekbrain.myapplication.model
 
 import android.os.Parcelable
+import com.geekbrain.myapplication.model.weatherDTO.WeatherDTO
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize

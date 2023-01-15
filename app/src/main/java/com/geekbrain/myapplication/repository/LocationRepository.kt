@@ -11,7 +11,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.model.Weather
+import com.geekbrain.myapplication.model.geoKod.CoordinatesDTO
+import com.geekbrain.myapplication.model.weatherDTO.WeatherDTO
+import com.geekbrain.myapplication.utils.Utils
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LocationRepository private constructor(private val appContext: Context) {   //ApplicationContext
     companion object {
@@ -31,6 +37,8 @@ class LocationRepository private constructor(private val appContext: Context) { 
 
     var weatherCurrentPointStateLiveData: MutableLiveData<CurrentPointState> = MutableLiveData()
 
+    private val remoteDataSource = RemoteDataSource()
+
     var weatherCurrentPointState = CurrentPointState
         .Success(
             Weather(
@@ -38,6 +46,7 @@ class LocationRepository private constructor(private val appContext: Context) { 
                 null
             )
         )
+
 
     private val TAG = LocationRepository::class.java.simpleName
 
@@ -100,54 +109,85 @@ class LocationRepository private constructor(private val appContext: Context) { 
         @SuppressLint("SuspiciousIndentation")
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun onReceive(context: Context?, intent: Intent?) {
-            mLocation = intent?.getParcelableExtra<Location>(
+            mLocation = intent?.getParcelableExtra(
                 EXTRA_LOCATION,
             )
             Log.i(TAG, "onReceive: $mLocation")
+            val lat = mLocation?.latitude?.toFloat()
+            val lon = mLocation?.longitude?.toFloat()
+            lat?.let { lat ->
+                lon?.let { lon ->
+                    weatherCurrentPointState = CurrentPointState.Success(
+                        Weather(
+                            City("Current Point", true, lat, lon),
+                            null
+                        )
+                    )
 
-            val loaderCityName = CoordinatesLoader(
-                coordinatesLoaderListener,
-                City(
-                    "Current Point",
-                    true,
-                    mLocation?.latitude?.toFloat(),
-                    mLocation?.longitude?.toFloat()
-                )
-            )
-            loaderCityName.getGeoKod(1)
-        }
-    }
-
-    private val coordinatesLoaderListener =
-        object : CoordinatesLoader.CoordinateLoaderListener {
-            @RequiresApi(Build.VERSION_CODES.N)
-            override fun onLoaded(city: City) {
-                WeatherLoader(onWeatherLoaderListener, city).apply {
-                    loaderWeather()
+                    remoteDataSource.getCityName(
+                        lat, lon, callbackCityName
+                    )
                 }
             }
 
-            override fun onFailed(throwable: Throwable) {
-                Log.i(TAG, "CoordinatesLoaderFailed: " + throwable.message)
-                throw throwable
+        }
+    }
+
+    private val callbackCityName = object : Callback<CoordinatesDTO> {
+        override fun onResponse(call: Call<CoordinatesDTO>, response: Response<CoordinatesDTO>) {
+            val geoKodResponse = response.body()
+            Log.i(TAG, "onResponse: callbackCityName")
+            if (Utils.checkResponseCoordinatesDTO(geoKodResponse)) {
+                with(
+                    response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)?.
+                        GeoObject
+                ) {
+                    val cityNameResponded = this?.name + ", " + this?.description
+                    val isRusResponded = cityNameResponded.contains("Россия")
+                    weatherCurrentPointState
+                        .weatherInCurrentPoint.let {
+                            it.city.city = cityNameResponded
+                            it.city.isRus = isRusResponded
+
+                            it.city.lon?.let { lon ->
+                                it.city.lat?.let { lat ->
+                                    remoteDataSource.getWeather(lat = lat, lon = lon,
+                                        callbackWeatherDTO)
+                                }
+                            }
+                        }
+                }
+            } else {
+                throw RuntimeException("Cordinates are wrong")
             }
 
         }
 
-    private val onWeatherLoaderListener: WeatherLoader.WeatherLoaderListener =
-        object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weather: Weather) {
-                weatherCurrentPointState =
-                    CurrentPointState.Success(weather)
-                weatherCurrentPointStateLiveData.value = weatherCurrentPointState
-            }
-
-            override fun onFailed(throwable: Throwable) {
-                Log.i(TAG, "weatherLoaderFailed: " + throwable.message)
-                throw throwable
-            }
-
+        override fun onFailure(call: Call<CoordinatesDTO>, t: Throwable) {
+            Log.i(TAG, "CoordinatesLoaderFailed: " + t.message)
+            throw t
         }
+
+    }
+
+    val callbackWeatherDTO = object : Callback<WeatherDTO>{
+        override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
+             response.body()?.let {
+                if (Utils.checkResponseWeatherDTO(it)){
+                    weatherCurrentPointState
+                        .weatherInCurrentPoint.weatherDTO = it
+                    weatherCurrentPointStateLiveData.value = weatherCurrentPointState
+                    }
+            }
+        }
+
+        override fun onFailure(call: Call<WeatherDTO>, t: Throwable) {
+            Log.i(TAG, "weatherCallbackFailed: " + t.message)
+            throw t
+        }
+    }
+
+
 
 }
 
