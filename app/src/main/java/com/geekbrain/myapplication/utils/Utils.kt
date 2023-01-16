@@ -4,6 +4,8 @@ import android.content.Context
 import android.location.Location
 import android.preference.PreferenceManager
 import com.geekbrain.myapplication.R
+import com.geekbrain.myapplication.model.geoKod.CoordinatesDTO
+import com.geekbrain.myapplication.model.weatherDTO.WeatherDTO
 import java.text.DateFormat
 import java.util.*
 
@@ -60,4 +62,17 @@ internal object Utils {
             DateFormat.getDateTimeInstance().format(Date())
         )
     }
+
+    fun checkResponseCoordinatesDTO(geoKodResponse: CoordinatesDTO?): Boolean {
+        return geoKodResponse?.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject?.name != null &&
+                geoKodResponse.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject?.description != null &&
+                geoKodResponse.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject?.Point?.pos != null
+    }
+
+    fun checkResponseWeatherDTO(weatherDTO: WeatherDTO): Boolean {
+        return (weatherDTO.fact?.temp != null && weatherDTO.geoObject?.district != null
+                && weatherDTO.forecasts.isNotEmpty())
+    }
+
+
 }

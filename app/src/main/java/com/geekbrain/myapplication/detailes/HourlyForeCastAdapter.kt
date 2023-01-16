@@ -10,27 +10,25 @@ import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.geekbrain.myapplication.R
-import com.geekbrain.myapplication.model.Hours
+import com.geekbrain.myapplication.model.weatherDTO.Hours
 
-private val TAG ="HourlyForeCastAdapter"
+private const val TAG ="HourlyForeCastAdapter"
 
-class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourViewHolder> () {
-
-
+class HourlyForeCastAdapter : RecyclerView.Adapter<HourlyForeCastAdapter.HourViewHolder> () {
 
     private var dayForecast: List<Hours> = listOf()
 
     fun setHoursForecast(arrayWithHourForecast: List<Hours?>){
-        dayForecast = arrayWithHourForecast?.let { it } as List<Hours>
+        dayForecast = arrayWithHourForecast as List<Hours>
         notifyDataSetChanged()
     }
 
     class HourViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        val hourTextView: TextView = view.findViewById(R.id.hour)
-        val hourlyTemperatureTextView: TextView = view.findViewById(R.id.hourTemperatureValue)
-        val hourlyPressureTextView: TextView = view.findViewById(R.id.hourPressureValue)
-        val hourlyHumidityTextView: TextView = view.findViewById(R.id.hourHumidityValue)
-        val weatherIcon: ImageView = view.findViewById(R.id.iconView)
+        private val hourTextView: TextView = view.findViewById(R.id.hour)
+        private val hourlyTemperatureTextView: TextView = view.findViewById(R.id.hourTemperatureValue)
+        private val hourlyPressureTextView: TextView = view.findViewById(R.id.hourPressureValue)
+        private val hourlyHumidityTextView: TextView = view.findViewById(R.id.hourHumidityValue)
+        private val weatherIcon: ImageView = view.findViewById(R.id.iconView)
 
         fun bind(hour: Hours){
             hourTextView.text = hour.hour
@@ -39,10 +37,7 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
             hourlyHumidityTextView.text = String.format("%d %%", hour.humidity)
 
             weatherIcon.loadSvg(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg", hour.icon))
-            /*Glide.with(itemView)
-                .load(String.format("https://yastatic.net/weather/i/icons/funky/dark/%s.svg", hour.icon))
-                    .into(weatherIcon)
-            Log.i(TAG, "bind: ${hour.icon}")*/
+
         }
     }
 
@@ -57,8 +52,6 @@ class HourlyForeCastAdapter(): RecyclerView.Adapter<HourlyForeCastAdapter.HourVi
     }
 
     override fun getItemCount(): Int = dayForecast.size
-
-
 
 }
 

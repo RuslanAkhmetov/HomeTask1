@@ -1,4 +1,4 @@
-package com.geekbrain.myapplication.model
+package com.geekbrain.myapplication.model.weatherDTO
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName

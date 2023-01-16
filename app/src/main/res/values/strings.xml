@@ -29,4 +29,5 @@
     <string name="max_temperature_label">Maximum Temperature C</string>
     <string name="morning">Morning</string>
     <string name="day">Day</string>
+    <string name="russian_other">Russian/Other</string>
 </resources>

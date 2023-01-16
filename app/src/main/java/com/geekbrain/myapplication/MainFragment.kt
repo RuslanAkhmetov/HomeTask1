@@ -37,7 +37,7 @@ class MainFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val TAG = "MainViewModel"
+    private val TAG = "MainFragment"
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
@@ -51,11 +51,7 @@ class MainFragment : Fragment() {
 
     private var isDataSetRus: Boolean = true
 
-    val connectivityActionReceiver = ConnectivityActionReceiver()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private val connectivityActionReceiver = ConnectivityActionReceiver()
 
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -102,7 +98,7 @@ class MainFragment : Fragment() {
             fillCurrentPoint(it)
         }
 
-        val observer = Observer<AppState> {
+        val listWeatherObserver = Observer<AppState> {
             renderData(it)
         }
 
@@ -116,7 +112,7 @@ class MainFragment : Fragment() {
             if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
                 val currentPointWeather =
                     (viewModel.getCurrentPointWeather().value as CurrentPointState.Success)
-                        .weatherCurrentPoint
+                        .weatherInCurrentPoint
                 activity?.supportFragmentManager?.apply {
                     beginTransaction()
                         .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
@@ -134,7 +130,8 @@ class MainFragment : Fragment() {
             changeWeatherDataSet()
         }
 
-        viewModel.getLiveData().observe(viewLifecycleOwner, observer)
+        viewModel.getWeatherListLiveData()
+            .observe(viewLifecycleOwner, listWeatherObserver)
 
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
@@ -157,11 +154,10 @@ class MainFragment : Fragment() {
                 binding.currentPoint
                     .mainFragmentRecyclerItemTextView
                     .text =
-                    currentPointState.weatherCurrentPoint.city.city?.let {
-                        String.format(
-                            it, " ",
-                            "currentPointState.weatherCurrentPoint.weatherDTO?.fact?.temp")
+                    currentPointState.weatherInCurrentPoint.city.city?.let {
+                        "$it  ${currentPointState.weatherInCurrentPoint.weatherDTO?.fact?.temp.toString()} C"
                     }
+
             }
             is CurrentPointState.Loading -> {
                 binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
@@ -169,7 +165,7 @@ class MainFragment : Fragment() {
             is CurrentPointState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${currentPointState.error.message}")
-                binding.mainFragmentFAB.showSnackbar(
+                binding.mainFragmentFAB.showSnackBar(
                     "Error" + currentPointState.error,
                     "Reload",
                     { viewModel.startMainViewModel() }
@@ -184,7 +180,8 @@ class MainFragment : Fragment() {
         when (appState) {
             is AppState.Success -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData.filter { weather -> weather.city.isRus == isDataSetRus }
+                adapter.setWeather(appState.weatherList
+                    .filter { weather -> weather.city.isRus == isDataSetRus }
                     .toList())
             }
 
@@ -196,7 +193,7 @@ class MainFragment : Fragment() {
             is AppState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 Log.i(TAG, "renderData: ${appState.error.message}")
-                binding.mainFragmentFAB.showSnackbar(
+                binding.mainFragmentFAB.showSnackBar(
                     "Error" + appState.error,
                     "Reload",
                     { viewModel.startMainViewModel() }
@@ -213,7 +210,7 @@ class MainFragment : Fragment() {
         } else {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
         }.also { isDataSetRus = !isDataSetRus }
-        renderData(viewModel.getLiveData().value as AppState)
+        renderData(viewModel.getWeatherListLiveData().value as AppState)
     }
 
     private fun checkPermission() =
@@ -284,15 +281,6 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun View.showSnackbar(
-        text: String,
-        actionText: String,
-        action: (View) -> Unit,
-        length: Int = Snackbar.LENGTH_INDEFINITE
-    ) {
-        Snackbar.make(this, text, length).setAction(actionText, action).show()
-    }
-
     inner class ConnectivityActionReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             val noConnection =
@@ -305,6 +293,15 @@ class MainFragment : Fragment() {
 
         }
 
+    }
+
+    private fun View.showSnackBar(
+        text: String,
+        actionText: String,
+        action: (View) -> Unit,
+        length: Int = Snackbar.LENGTH_INDEFINITE
+    ) {
+        Snackbar.make(this, text, length).setAction(actionText, action).show()
     }
 
 }

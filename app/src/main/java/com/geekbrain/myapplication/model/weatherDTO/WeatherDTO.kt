@@ -1,4 +1,4 @@
-package com.geekbrain.myapplication.model
+package com.geekbrain.myapplication.model.weatherDTO
 import android.os.Parcelable
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -14,9 +14,12 @@ data class WeatherDTO(
     @Expose
     val  nowDt: String,
 
-    @SerializedName("info")
+    @SerializedName("info"       )
+    var info      : Info,
+
+    @SerializedName("geo_object" )
     @Expose
-    val  info: Info,
+    var geoObject : GeoObject?,
 
     @SerializedName("fact")
     @Expose

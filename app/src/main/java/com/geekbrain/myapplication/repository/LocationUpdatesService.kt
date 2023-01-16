@@ -17,9 +17,9 @@ import com.google.android.gms.location.*
 const val PACKAGE_NAME =
     "com.geekbrain.myapplication.repository.locationupdatesforegroundservice"
 
-const val EXTRA_LOCATION = PACKAGE_NAME + ".location"
+const val EXTRA_LOCATION = "$PACKAGE_NAME.location"
 
-const val ACTION_BROADCAST = PACKAGE_NAME + ".broadcast"
+const val ACTION_BROADCAST = "$PACKAGE_NAME.broadcast"
 
 class LocationUpdatesService : Service() {
 
@@ -95,7 +95,7 @@ class LocationUpdatesService : Service() {
 
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
-                locationResult.getLastLocation()?.let { onNewLocation(it) }
+                locationResult.lastLocation?.let { onNewLocation(it) }
             }
         }
 
@@ -211,7 +211,7 @@ class LocationUpdatesService : Service() {
             )
         } catch (unlikely: SecurityException) {
             Utils.setRequestingLocationUpdates(this, false)
-            Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely)
+            Log.e(TAG, "Lost location permission. Could not request updates. $unlikely")
         }
     }
 
@@ -228,7 +228,7 @@ class LocationUpdatesService : Service() {
             Log.i(TAG, "removeLocationUpdates: ")
         } catch (unlikely: SecurityException) {
             Utils.setRequestingLocationUpdates(this, true)
-            Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely)
+            Log.e(TAG, "Lost location permission. Could not remove updates. $unlikely")
         }
     }
 
@@ -285,14 +285,14 @@ class LocationUpdatesService : Service() {
     private val lastLocation: Unit
         get() {
             try {
-                mFusedLocationClient.getLastLocation()
+                mFusedLocationClient.lastLocation
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful && task.result != null) {
                             mLocation = task.result
                             Log.i(TAG, "mLocation: $mLocation")
                             val intent = Intent(ACTION_BROADCAST)
                             intent.putExtra(EXTRA_LOCATION, mLocation)
-                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent)
+                            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                         } else {
                             Log.w(TAG, "Failed to get location.")
                         }
@@ -303,14 +303,14 @@ class LocationUpdatesService : Service() {
         }
 
     private fun onNewLocation(location: Location) {
-        Log.i(TAG, "New location: " + location)
+        Log.i(TAG, "New location: $location")
 
         mLocation = location
 
         // Notify anyone listening for broadcasts about the new location.
         val intent = Intent(ACTION_BROADCAST)
         intent.putExtra(EXTRA_LOCATION, location)
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
 
         // Update notification content if running as a foreground service.
         if (serviceIsRunningInForeground(this)) {
@@ -323,9 +323,9 @@ class LocationUpdatesService : Service() {
      */
     private fun createLocationRequest() {
         mLocationRequest = LocationRequest()
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS)
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS)
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+        mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
 
@@ -350,7 +350,7 @@ class LocationUpdatesService : Service() {
             Context.ACTIVITY_SERVICE
         ) as ActivityManager
         for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (javaClass.name == service.service.getClassName()) {
+            if (javaClass.name == service.service.className) {
                 if (service.foreground) {
                     return true
                 }

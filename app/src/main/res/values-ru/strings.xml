@@ -15,4 +15,5 @@
     <string name="max_temperature_label">Макс. температура, C</string>
     <string name="morning">Morning</string>
     <string name="day">Day</string>
+    <string name="russian_other">Русские/Другие</string>
 </resources>

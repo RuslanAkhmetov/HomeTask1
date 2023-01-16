@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi
 
 data class City(
     var city: String?,
-    val isRus: Boolean?,
+    var isRus: Boolean?,
     var lat: Float?,
     var lon: Float?
 ): Parcelable {

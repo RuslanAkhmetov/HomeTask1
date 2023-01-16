@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
+import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
 import kotlinx.coroutines.launch
@@ -23,12 +24,12 @@ class MainViewModel(
         Transformations.switchMap(locationRepository.weatherCurrentPointStateLiveData)
                  { MutableLiveData<CurrentPointState>(locationRepository.weatherCurrentPointState) }
 
-
-    fun getLiveData() = liveDataToObserve
+    fun getWeatherListLiveData() = liveDataToObserve
 
     fun getCurrentPointWeather() = liveDataCurrentPointWeather
 
-    private val weatherList = weatherRepository.getWeatherFromRepository()
+    private var weatherList: MutableList<Weather> =
+                    weatherRepository.getWeatherFromRepository()
 
     init {
         startMainViewModel()
@@ -38,15 +39,15 @@ class MainViewModel(
         viewModelScope.launch {
             locationRepository.startLocationService()
             refreshDataFromRepository()
+            liveDataToObserve.postValue(Success(weatherList))
         }
     }
 
-     fun refreshDataFromRepository() {
+     private fun refreshDataFromRepository() {
         liveDataToObserve.postValue(Loading)
        // withContext(Dispatchers.IO) {
             try {
                 weatherRepository.refreshWeatherList()
-                liveDataToObserve.postValue(Success(weatherList))
             } catch (e: Exception) {
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                 liveDataToObserve.postValue(Error(e))
