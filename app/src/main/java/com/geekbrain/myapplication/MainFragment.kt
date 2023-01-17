@@ -29,7 +29,9 @@ import com.geekbrain.myapplication.viewmodel.AppState
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
 import com.geekbrain.myapplication.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
+import kotlin.math.log
 
+private const val IS_RUS_KEY = "IS_RUS_KEY"
 
 class MainFragment : Fragment() {
 
@@ -49,7 +51,31 @@ class MainFragment : Fragment() {
 
     private val viewModel by viewModels<MainViewModel>()
 
-    private var isDataSetRus: Boolean = true
+    private var isDataSetRus: Boolean =  true
+
+    private fun setDataSet(){
+        activity?.let{
+            isDataSetRus = it.getPreferences(Context.MODE_PRIVATE)
+                .getBoolean(IS_RUS_KEY, false)
+            Log.i(TAG, "setDataSet isDataSetRus: $isDataSetRus")
+            if (isDataSetRus) {
+                binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
+            } else {
+                binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
+            }
+        }
+    }
+
+    private fun safeDataSet(){
+        activity?.let {
+            Log.i(TAG, "safeDataSet: isDateRus $isDataSetRus")
+            it.getPreferences(Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(IS_RUS_KEY, isDataSetRus)
+                .apply()
+            }
+        }
+
 
     private val connectivityActionReceiver = ConnectivityActionReceiver()
 
@@ -107,6 +133,8 @@ class MainFragment : Fragment() {
         } else {
             binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
         }
+
+        setDataSet()
 
         binding.currentPoint.mainFragmentRecyclerItemTextView.setOnClickListener {
             if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
@@ -206,10 +234,11 @@ class MainFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun changeWeatherDataSet() {
         if (isDataSetRus) {
-            binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
-        } else {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
-        }.also { isDataSetRus = !isDataSetRus }
+        } else {
+            binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
+        }.also {isDataSetRus = !isDataSetRus }
+        safeDataSet()
         renderData(viewModel.getWeatherListLiveData().value as AppState)
     }
 
