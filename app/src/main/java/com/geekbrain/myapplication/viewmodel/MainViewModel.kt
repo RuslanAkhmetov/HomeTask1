@@ -1,6 +1,5 @@
 package com.geekbrain.myapplication.viewmodel
 
-import android.content.*
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -8,7 +7,6 @@ import androidx.lifecycle.*
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
-import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.N)
 class MainViewModel(
@@ -36,23 +34,19 @@ class MainViewModel(
     }
 
     fun startMainViewModel(){
-        viewModelScope.launch {
             locationRepository.startLocationService()
             refreshDataFromRepository()
             liveDataToObserve.postValue(Success(weatherList))
-        }
     }
 
      private fun refreshDataFromRepository() {
         liveDataToObserve.postValue(Loading)
-       // withContext(Dispatchers.IO) {
             try {
                 weatherRepository.refreshWeatherList()
             } catch (e: Exception) {
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                 liveDataToObserve.postValue(Error(e))
             }
-       // }
     }
 }
 

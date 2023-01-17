@@ -13,17 +13,13 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class WeatherRepository private constructor(_context: Context) : Repository { //context Application
+class WeatherRepository private constructor( private val  appContext: Context) : Repository { //context Application
 
     private val TAG = "WeatherRepository"
 
-    val context = _context
-
     private val remoteDataSource = RemoteDataSource()
 
-    var listWeatherReceived: MutableList<Weather> =mutableListOf()
-
-    override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
+    var listWeatherReceived: MutableList<Weather> = mutableListOf()
 
     companion object {
         private var instance: WeatherRepository? = null
@@ -31,11 +27,13 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
             if (instance == null)
                 instance = WeatherRepository(context)
         }
-
         fun get(): WeatherRepository {
             return instance ?: throw IllegalStateException("MovieRepository must be initialized")
         }
+
     }
+
+    override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun refreshWeatherList() {
@@ -54,7 +52,6 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun getWeatherListFromServer(listWeather: List<Weather>) {
-            Log.i(TAG, "getWeatherFromServer size of listweather: ${listWeather.size}")
             for (weatherItem in listWeather) {
                 try {
                     if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
@@ -62,8 +59,7 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
                     } else {
                         weatherItem.city.lat?.let { lat ->
                             weatherItem.city.lon?.let { lon ->
-                                getWeatherFromRemoteSourse(lat, lon, callbackWeatherDTO)
-                                Log.i(TAG, "getWeatherFromServer: ${weatherItem.city}")
+                                getWeatherFromRemoteSource(lat, lon, callbackWeatherDTO)
                             }
                         }
                     }
@@ -72,7 +68,6 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
                     throw e
                 }
             }
-            Log.i(TAG, "getWeatherFromServer: listWeatherReceived " + listWeatherReceived.size)
     }
 
     private val callbackCoordinatesDTO = object : Callback<CoordinatesDTO> {
@@ -98,9 +93,6 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
                             remoteDataSource.getWeather(lat, lon, callbackWeatherDTO)
                         }
                     }
-                    /*WeatherLoader(onWeatherLoaderListener, city).apply {
-                        loaderWeather()
-                    }*/
 
                 }
             }
@@ -118,14 +110,12 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
     private val callbackWeatherDTO = object : Callback<WeatherDTO> {
         override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
             Log.i(TAG, "onResponse: WeatherDTO")
-            response.body()?.let {
+            response.body()?.let { it ->
                 if (Utils.checkResponseWeatherDTO(response.body()!!)) {
-                    val lat = response.body()!!.info.lat
-                    val lon = response.body()!!.info.lon
-                    Log.i(TAG, "onResponse: $lat, $lon")
-                    lat?.let { lat ->
-                        lon?.let { lon ->
-                            listWeatherReceived.find { it.city.lat == lat && it.city.lon == lon }
+                    it.info.lat?.let { lat ->
+                        it.info.lon?.let { lon ->
+                            listWeatherReceived.find {it1 ->
+                                it1.city.lat == lat && it1.city.lon == lon }
                                 ?.weatherDTO = response.body()
                         }
                     }
@@ -140,21 +130,18 @@ class WeatherRepository private constructor(_context: Context) : Repository { //
 
     }
 
-    override fun getWeatherFromRemoteSourse(lat: Float, lon: Float, callback: Callback<WeatherDTO>) {
+    private fun getWeatherFromRemoteSource(lat: Float, lon: Float, callback: Callback<WeatherDTO>) {
         Log.i(TAG, "getWeatherFromServer: ")
         remoteDataSource.getWeather(lat, lon, callback)
     }
 
-    override fun getCityCoordinates(city: City, callback: Callback<CoordinatesDTO>) {
+    private fun getCityCoordinates(city: City, callback: Callback<CoordinatesDTO>) {
         Log.i(TAG, "getCityCoordinates: ")
-        remoteDataSource.getCoordinates(city, callbackCoordinatesDTO)
+        remoteDataSource.getCoordinates(city, callback)
     }
 
     override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()
 
     override fun getWeatherFromLocalStorageWorld(): List<Weather> = getWorldCities()
-
-
-
 
 }

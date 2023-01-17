@@ -26,7 +26,6 @@ class LocationRepository private constructor(private val appContext: Context) { 
         fun initialize(context: Context) {
             if (instance == null) {
                 instance = LocationRepository(context)
-
             }
         }
 
@@ -113,10 +112,10 @@ class LocationRepository private constructor(private val appContext: Context) { 
                 EXTRA_LOCATION,
             )
             Log.i(TAG, "onReceive: $mLocation")
-            val lat = mLocation?.latitude?.toFloat()
-            val lon = mLocation?.longitude?.toFloat()
-            lat?.let { lat ->
-                lon?.let { lon ->
+            val locationLat = mLocation?.latitude?.toFloat()
+            val locationLon = mLocation?.longitude?.toFloat()
+            locationLat?.let { lat ->
+                locationLon?.let { lon ->
                     weatherCurrentPointState = CurrentPointState.Success(
                         Weather(
                             City("Current Point", true, lat, lon),
