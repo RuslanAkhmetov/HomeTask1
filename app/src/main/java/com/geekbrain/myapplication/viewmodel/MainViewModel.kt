@@ -10,7 +10,7 @@ import com.geekbrain.myapplication.viewmodel.AppState.*
 
 @RequiresApi(Build.VERSION_CODES.N)
 class MainViewModel(
-    private val weatherRepository: Repository = WeatherRepository.get(),
+    private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     private val locationRepository: LocationRepository = LocationRepository.get(),
 ) : ViewModel() {
 
