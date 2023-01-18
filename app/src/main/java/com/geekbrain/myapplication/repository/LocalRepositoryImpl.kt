@@ -1,24 +1,42 @@
 package com.geekbrain.myapplication.repository
 
+import android.os.Handler
+import android.util.Log
 import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.room.CityDao
 import com.geekbrain.myapplication.room.CityEntity
+private const val TAG = "LocalRepositoryImpl"
 
 class LocalRepositoryImpl(private val localDaoSource: CityDao) : LocalRepository {
     override fun getAllCities(): List<City> {
-        return convertCityEntityToCity(localDaoSource.all())
+        val handler = Handler()
+        val citiesEntity = localDaoSource.all()
+        val cities = convertCityEntityToCity(citiesEntity)
+        Log.i(TAG, "getAllCities: ${cities.size}")
+        return cities
+    }
+
+    override fun saveEntity(city: City) {
+        //Thread {
+            localDaoSource.insert(convertCityToCityEntity(city))
+            Log.i(TAG, "saveEntity: ++")
+        //}.start()
+    }
+
+    override fun deleteCities(finalId: Long) {
+        localDaoSource.deleteLast(finalId)
+    }
+
+    override fun citiesCount(): Long {
+        return localDaoSource.cityEntityCount()
     }
 
     private fun convertCityEntityToCity(entityList: List<CityEntity>): List<City> {
+        entityList.forEach{Log.i(TAG, "convertCityEntityToCity: id: ${it.id} name: ${it.city}")}
         return entityList.map {
             City(it.city, it.isRus, it.lat, it.lon)
         }
     }
-
-    override fun saveEntity(city: City) {
-        localDaoSource.insert(convertCityToCityEntity(city))
-    }
-
 
     private fun convertCityToCityEntity(city: City): CityEntity {
         if (city.city != null && city.isRus != null && city.lat != null && city.lon != null) {

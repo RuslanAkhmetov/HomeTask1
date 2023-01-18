@@ -13,17 +13,14 @@ data class Weather(
 
 fun getDefaultCity() = City("Saint-Petersburg", true, null, null)
 
-fun getWorldCities() = listOf(
-    Weather(City("London", false, null, null), null),
-    Weather(City("Tokio",false, null, null), null),
-    Weather(City("Paris",false, null, null), null),
-)
 
-
-fun getRussianCities() = listOf(
+fun initWeatherList() = listOf(
     Weather(City("Moscow", true, null, null), null),
     Weather(City("Saint-Petersburg", true, null, null), null),
     Weather(City("Novosibirsk", true, null, null), null),
-    Weather(City("Барнаул", true, null, null), null)
+    Weather(City("Барнаул", true, null, null), null),
+    Weather(City("London", false, null, null), null),
+    Weather(City("Tokio",false, null, null), null),
+    Weather(City("Paris",false, null, null), null),
 )
 

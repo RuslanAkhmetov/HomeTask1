@@ -11,17 +11,23 @@ import androidx.room.Update
 interface CityDao {
 
     @Query("SELECT * FROM CityEntity")
-    fun all(): List<CityEntity>
+    suspend fun all(): List<CityEntity>
 
     @Query("SELECT * FROM CityEntity WHERE city LIKE :city")
-    fun getDataByName (city: String): List<CityEntity>
+    suspend fun getDataByName (city: String): List<CityEntity>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(cityEntity: CityEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(cityEntity: CityEntity)
 
     @Update
-    fun update(cityEntity: CityEntity)
+    suspend fun update(cityEntity: CityEntity)
 
     @Delete
-    fun delete(cityEntity: CityEntity)
+    suspend fun delete(cityEntity: CityEntity)
+
+    @Query("DELETE FROM CityEntity WHERE id > :finalId")
+    suspend fun deleteLast(finalId: Long)
+
+    @Query("SELECT COUNT(*) from CityEntity")
+    suspend fun cityEntityCount() : Long
 }

@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
+import com.geekbrain.myapplication.WeatherApplication
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
@@ -12,6 +13,7 @@ import com.geekbrain.myapplication.viewmodel.AppState.*
 class MainViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     private val locationRepository: LocationRepository = LocationRepository.get(),
+    private val localRepository: LocalRepository = LocalRepositoryImpl(WeatherApplication.getCityDao())
 ) : ViewModel() {
 
     private val TAG = "MainViewModel"
@@ -30,6 +32,8 @@ class MainViewModel(
                     weatherRepository.getWeatherFromRepository()
 
     init {
+
+        Log.i(TAG, "Count: ${localRepository.citiesCount()}")
         startMainViewModel()
     }
 
@@ -43,6 +47,7 @@ class MainViewModel(
         liveDataToObserve.postValue(Loading)
             try {
                 weatherRepository.refreshWeatherList()
+
             } catch (e: Exception) {
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                 liveDataToObserve.postValue(Error(e))

@@ -23,7 +23,7 @@ class WeatherApplication : Application() {
         private const val DB_NAME = "Cities.db"
 
         @OptIn(InternalCoroutinesApi::class)
-        fun getCitYDao(): CityDao {
+        fun getCityDao(): CityDao {
             if (db == null) {
                 synchronized((CityDataBase::class.java)) {
                     if (db == null) {
@@ -36,6 +36,7 @@ class WeatherApplication : Application() {
                             CityDataBase::class.java,
                             DB_NAME
                         )
+                            //.allowMainThreadQueries()
                             .build()
                     }
                 }

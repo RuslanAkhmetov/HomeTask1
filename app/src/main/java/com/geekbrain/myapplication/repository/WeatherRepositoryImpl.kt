@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.geekbrain.myapplication.WeatherApplication
 import com.geekbrain.myapplication.model.*
 import com.geekbrain.myapplication.model.geoKod.CoordinatesDTO
 import com.geekbrain.myapplication.model.weatherDTO.WeatherDTO
@@ -20,6 +21,9 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
     private val remoteDataSource = RemoteDataSource()
 
     var listWeatherReceived: MutableList<Weather> = mutableListOf()
+
+    private val localRepository: LocalRepository
+            = LocalRepositoryImpl(WeatherApplication.getCityDao())
 
     companion object {
         private var instance: WeatherRepositoryImpl? = null
@@ -38,8 +42,7 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
     @RequiresApi(Build.VERSION_CODES.N)
     override fun refreshWeatherList() {
         try {
-            val listWeatherSent =
-                (getWeatherFromLocalStorageRus() + getWeatherFromLocalStorageWorld())
+            val listWeatherSent = getWeatherFromLocalStorage()
                         as MutableList<Weather>
             getWeatherListFromServer(listWeatherSent)
 
@@ -73,9 +76,9 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
     private val callbackCoordinatesDTO = object : Callback<CoordinatesDTO> {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onResponse(call: Call<CoordinatesDTO>, response: Response<CoordinatesDTO>) {
-            Log.i(TAG, "onResponse: ")
             if (Utils.checkResponseCoordinatesDTO(response.body())) {
                 val city = City(null, null, 0f, 0f)
+                Log.i(TAG, "callbackCoordinatesDTO : onResponse: ")
                 with(
                     response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject
                 ) {
@@ -88,6 +91,7 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
                         city.lat = fl.component2()
                     }
                     listWeatherReceived.add(Weather(city, null))
+                    localRepository.saveEntity(city)
                     city.lat?.let { lat ->
                         city.lon?.let { lon ->
                             remoteDataSource.getWeather(lat, lon, callbackWeatherDTO)
@@ -101,7 +105,8 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
 
 
         override fun onFailure(call: Call<CoordinatesDTO>, t: Throwable) {
-            Log.i(TAG, "onFailure: ")
+            Log.i(TAG, "callbackCoordinatesDTO : onFailure: ")
+            t.printStackTrace()
             throw t
         }
 
@@ -109,7 +114,6 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
 
     private val callbackWeatherDTO = object : Callback<WeatherDTO> {
         override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
-            Log.i(TAG, "onResponse: WeatherDTO")
             response.body()?.let { it ->
                 if (Utils.checkResponseWeatherDTO(response.body()!!)) {
                     it.info.lat?.let { lat ->
@@ -119,19 +123,22 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
                                 ?.weatherDTO = response.body()
                         }
                     }
+                    Log.i(TAG, "onResponse: WeatherDTO. temp ${it.fact?.temp}")
+
                 }
             }
         }
 
         override fun onFailure(call: Call<WeatherDTO>, t: Throwable) {
-            Log.i(TAG, "onFailure: ")
+            Log.i(TAG, "callbackWeatherDTO. onFailure: ")
+            t.printStackTrace()
             throw t
         }
 
     }
 
     private fun getWeatherFromRemoteSource(lat: Float, lon: Float, callback: Callback<WeatherDTO>) {
-        Log.i(TAG, "getWeatherFromServer: ")
+        Log.i(TAG, "getWeatherFromServer: lat = $lat, lon = $lon ")
         remoteDataSource.getWeather(lat, lon, callback)
     }
 
@@ -140,8 +147,16 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
         remoteDataSource.getCoordinates(city, callback)
     }
 
-    override fun getWeatherFromLocalStorageRus(): List<Weather> = getRussianCities()
+    override fun getWeatherFromLocalStorage(): List<Weather> {
+        val cities = localRepository.getAllCities()
+        return if (cities.isNotEmpty()){
+            Log.i(TAG, "getWeatherFromLocalStorage: from db")
+            cities.map { Weather(it, null) }
+        } else{
+            Log.i(TAG, "getWeatherFromLocalStorage: initialize")
+            initWeatherList()
+        }
+    }
 
-    override fun getWeatherFromLocalStorageWorld(): List<Weather> = getWorldCities()
 
 }
