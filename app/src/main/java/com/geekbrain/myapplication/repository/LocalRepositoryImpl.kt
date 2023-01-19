@@ -32,7 +32,6 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao) : LocalRepository
     }
 
     private fun convertCityEntityToCity(entityList: List<CityEntity>): List<City> {
-        entityList.forEach{Log.i(TAG, "convertCityEntityToCity: id: ${it.id} name: ${it.city}")}
         return entityList.map {
             City(it.city, it.isRus, it.lat, it.lon)
         }

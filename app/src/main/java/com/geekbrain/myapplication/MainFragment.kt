@@ -29,7 +29,6 @@ import com.geekbrain.myapplication.viewmodel.AppState
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
 import com.geekbrain.myapplication.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlin.math.log
 
 private const val IS_RUS_KEY = "IS_RUS_KEY"
 
@@ -183,7 +182,8 @@ class MainFragment : Fragment() {
                     .mainFragmentRecyclerItemTextView
                     .text =
                     currentPointState.weatherInCurrentPoint.city.city?.let {
-                        "$it  ${currentPointState.weatherInCurrentPoint.weatherDTO?.fact?.temp.toString()} C"
+                        "$it  ${currentPointState.weatherInCurrentPoint.weatherDTO
+                            ?.fact?.temp.toString()} C"
                     }
 
             }
