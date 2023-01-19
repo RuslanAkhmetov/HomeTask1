@@ -14,13 +14,14 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class WeatherRepositoryImpl private constructor(private val  appContext: Context) : WeatherRepository { //context Application
+class WeatherRepositoryImpl private constructor(private val  appContext: Context)
+    : WeatherRepository { //context Application
 
     private val TAG = "WeatherRepository"
 
     private val remoteDataSource = RemoteDataSource()
 
-    var listWeatherReceived: MutableList<Weather> = mutableListOf()
+    var listWeather: MutableList<Weather> = mutableListOf()
 
     private val localRepository: LocalRepository
             = LocalRepositoryImpl(WeatherApplication.getCityDao())
@@ -37,14 +38,16 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
 
     }
 
-    override fun getWeatherFromRepository(): MutableList<Weather> = listWeatherReceived
+    override fun getWeatherFromRepository(): MutableList<Weather> {
+        return listWeather
+    }
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun refreshWeatherList() {
         try {
-            val listWeatherSent = getWeatherFromLocalStorage()
+            listWeather = getWeatherFromLocalStorage()
                         as MutableList<Weather>
-            getWeatherListFromServer(listWeatherSent)
+            getWeatherListFromServer(listWeather)
 
         } catch (e: Exception) {
             throw e
@@ -77,23 +80,28 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onResponse(call: Call<CoordinatesDTO>, response: Response<CoordinatesDTO>) {
             if (Utils.checkResponseCoordinatesDTO(response.body())) {
-                val city = City(null, null, 0f, 0f)
+                val cityResponded = City(null, null, 0f, 0f)
                 Log.i(TAG, "callbackCoordinatesDTO : onResponse: ")
                 with(
-                    response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject
+                    response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)
+                        ?.GeoObject
                 ) {
 
-                    city.city = this?.name + ", " + this?.description
-                    city.isRus = city.city?.contains("Россия")
+                    cityResponded.city = this?.name + ", " + this?.description
+                    cityResponded.isRus = cityResponded.city?.contains("Россия")
                     val fl = this?.Point?.pos?.split(" ")?.map { it.toFloat() }
                     if (fl != null && fl.size >= 2) {
-                        city.lon = fl.component1()
-                        city.lat = fl.component2()
+                        cityResponded.lon = fl.component1()
+                        cityResponded.lat = fl.component2()
                     }
-                    listWeatherReceived.add(Weather(city, null))
-                    localRepository.saveEntity(city)
-                    city.lat?.let { lat ->
-                        city.lon?.let { lon ->
+                    cityResponded.city?.let{ cityMame ->
+                        listWeather.find { cityMame.contains(it.city.city as CharSequence)}
+                            ?.city = cityResponded
+                    }
+                    Log.i(TAG, "callbackCoordinatesDTO: onResponse: ${listWeather.size}")
+                    localRepository.saveEntity(cityResponded)
+                    cityResponded.lat?.let { lat ->
+                        cityResponded.lon?.let { lon ->
                             remoteDataSource.getWeather(lat, lon, callbackWeatherDTO)
                         }
                     }
@@ -114,17 +122,16 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
 
     private val callbackWeatherDTO = object : Callback<WeatherDTO> {
         override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
-            response.body()?.let { it ->
-                if (Utils.checkResponseWeatherDTO(response.body()!!)) {
-                    it.info.lat?.let { lat ->
-                        it.info.lon?.let { lon ->
-                            listWeatherReceived.find {it1 ->
-                                it1.city.lat == lat && it1.city.lon == lon }
+            response.body()?.let { weatherDTOResponded ->
+                if (Utils.checkResponseWeatherDTO(weatherDTOResponded)) {
+                    weatherDTOResponded.info.lat?.let { lat ->
+                        weatherDTOResponded.info.lon?.let { lon ->
+                            listWeather.find { item ->
+                                item.city.lat == lat && item.city.lon == lon }
                                 ?.weatherDTO = response.body()
+
                         }
                     }
-                    Log.i(TAG, "onResponse: WeatherDTO. temp ${it.fact?.temp}")
-
                 }
             }
         }

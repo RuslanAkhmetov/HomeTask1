@@ -36,7 +36,7 @@ class WeatherApplication : Application() {
                             CityDataBase::class.java,
                             DB_NAME
                         )
-                            //.allowMainThreadQueries()
+                            .allowMainThreadQueries()
                             .build()
                     }
                 }
