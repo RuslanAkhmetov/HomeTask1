@@ -50,10 +50,10 @@ class MainFragment : Fragment() {
 
     private val viewModel by viewModels<MainViewModel>()
 
-    private var isDataSetRus: Boolean =  true
+    private var isDataSetRus: Boolean = true
 
-    private fun setDataSet(){
-        activity?.let{
+    private fun setDataSet() {
+        activity?.let {
             isDataSetRus = it.getPreferences(Context.MODE_PRIVATE)
                 .getBoolean(IS_RUS_KEY, false)
             Log.i(TAG, "setDataSet isDataSetRus: $isDataSetRus")
@@ -65,15 +65,14 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun safeDataSet(){
+    private fun safeDataSet() {
         activity?.let {
-            Log.i(TAG, "safeDataSet: isDateRus $isDataSetRus")
             it.getPreferences(Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(IS_RUS_KEY, isDataSetRus)
                 .apply()
-            }
         }
+    }
 
 
     private val connectivityActionReceiver = ConnectivityActionReceiver()
@@ -94,10 +93,11 @@ class MainFragment : Fragment() {
                 it,
                 connectivityActionReceiver,
                 IntentFilter(CONNECTIVITY_ACTION),
-                ContextCompat.RECEIVER_EXPORTED)
+                ContextCompat.RECEIVER_EXPORTED
+            )
         }
 
-            return binding.root
+        return binding.root
 
     }
 
@@ -127,11 +127,21 @@ class MainFragment : Fragment() {
             renderData(it)
         }
 
-        if (!checkPermission()) {
-            binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.GONE
-        } else {
-            binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
-        }
+        viewModel.getCurrentPointWeather()
+            .observe(viewLifecycleOwner, currentPointWeatherObserver)
+
+        viewModel.getWeatherListLiveData()
+            .observe(viewLifecycleOwner, listWeatherObserver)
+
+
+
+        binding.currentPoint.mainFragmentRecyclerItemTextView.visibility =
+            if (!checkPermission()) {
+                View.GONE
+            } else {
+                View.VISIBLE
+            }
+
 
         setDataSet()
 
@@ -157,11 +167,6 @@ class MainFragment : Fragment() {
             changeWeatherDataSet()
         }
 
-        viewModel.getWeatherListLiveData()
-            .observe(viewLifecycleOwner, listWeatherObserver)
-
-        viewModel.getCurrentPointWeather()
-            .observe(viewLifecycleOwner, currentPointWeatherObserver)
 
     }
 
@@ -182,8 +187,10 @@ class MainFragment : Fragment() {
                     .mainFragmentRecyclerItemTextView
                     .text =
                     currentPointState.weatherInCurrentPoint.city.city?.let {
-                        "$it  ${currentPointState.weatherInCurrentPoint.weatherDTO
-                            ?.fact?.temp.toString()} C"
+                        "$it  ${
+                            currentPointState.weatherInCurrentPoint.weatherDTO
+                                ?.fact?.temp.toString()
+                        } C"
                     }
 
             }
@@ -237,7 +244,7 @@ class MainFragment : Fragment() {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
         } else {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
-        }.also {isDataSetRus = !isDataSetRus }
+        }.also { isDataSetRus = !isDataSetRus }
         safeDataSet()
         renderData(viewModel.getWeatherListLiveData().value as AppState)
     }
@@ -292,6 +299,7 @@ class MainFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -302,6 +310,7 @@ class MainFragment : Fragment() {
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+
                 binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
             } else {
                 Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
@@ -310,11 +319,11 @@ class MainFragment : Fragment() {
         }
     }
 
-    inner class ConnectivityActionReceiver: BroadcastReceiver(){
+    inner class ConnectivityActionReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val noConnection =
                 intent?.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)
-            if(noConnection == true) {
+            if (noConnection == true) {
                 Toast.makeText(context, "Connection Lost", Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(context, "Connection Found", Toast.LENGTH_LONG).show()
