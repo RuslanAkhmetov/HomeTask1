@@ -14,8 +14,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class WeatherRepositoryImpl private constructor(private val  appContext: Context)
-    : WeatherRepository { //context Application
+class WeatherRepositoryImpl private constructor(private val appContext: Context) :
+    WeatherRepository { //context Application
 
     private val TAG = "WeatherRepository"
 
@@ -23,8 +23,30 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
 
     var listWeather: MutableList<Weather> = mutableListOf()
 
-    private val localRepository: LocalRepository
-            = LocalRepositoryImpl(WeatherApplication.getCityDao())
+    private val listener = object : LocalRepositoryImpl.DBLoadListener {
+        @RequiresApi(Build.VERSION_CODES.N)
+        override fun onReceiveCitiesFromDB(cities: List<City>) {
+
+            if (cities.isNotEmpty()) {
+                Log.i(TAG, "getWeatherFromLocalStorage: from db")
+                listWeather = cities.map { Weather(it, null) } as MutableList<Weather>
+            } else {
+                Log.i(TAG, "getWeatherFromLocalStorage: initialize")
+                listWeather = initWeatherList() as MutableList<Weather>
+            }
+            getWeatherListFromServer(listWeather)
+
+        }
+
+        override fun onFailure() {
+            TODO("Not yet implemented")
+        }
+
+    }
+
+    private val localRepository: LocalRepository =
+        LocalRepositoryImpl(WeatherApplication.getCityDao(), listener)
+
 
     companion object {
         private var instance: WeatherRepositoryImpl? = null
@@ -32,6 +54,7 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
             if (instance == null)
                 instance = WeatherRepositoryImpl(context)
         }
+
         fun get(): WeatherRepositoryImpl {
             return instance ?: throw IllegalStateException("MovieRepository must be initialized")
         }
@@ -45,9 +68,7 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
     @RequiresApi(Build.VERSION_CODES.N)
     override fun refreshWeatherList() {
         try {
-            listWeather = getWeatherFromLocalStorage()
-                        as MutableList<Weather>
-            getWeatherListFromServer(listWeather)
+            getWeatherFromLocalStorage()
 
         } catch (e: Exception) {
             throw e
@@ -55,25 +76,24 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
     }
 
 
-
     @RequiresApi(Build.VERSION_CODES.N)
     override fun getWeatherListFromServer(listWeather: List<Weather>) {
-            for (weatherItem in listWeather) {
-                try {
-                    if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
-                        getCityCoordinates(weatherItem.city, callbackCoordinatesDTO)
-                    } else {
-                        weatherItem.city.lat?.let { lat ->
-                            weatherItem.city.lon?.let { lon ->
-                                getWeatherFromRemoteSource(lat, lon, callbackWeatherDTO)
-                            }
+        for (weatherItem in listWeather) {
+            try {
+                if (weatherItem.city.lat == null || weatherItem.city.lon == null) {
+                    getCityCoordinates(weatherItem.city, callbackCoordinatesDTO)
+                } else {
+                    weatherItem.city.lat?.let { lat ->
+                        weatherItem.city.lon?.let { lon ->
+                            getWeatherFromRemoteSource(lat, lon, callbackWeatherDTO)
                         }
                     }
-                } catch (e: Exception) {
-                    Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
-                    throw e
                 }
+            } catch (e: Exception) {
+                Log.i(TAG, "getWeatherFromServerFailed: " + e.message)
+                throw e
             }
+        }
     }
 
     private val callbackCoordinatesDTO = object : Callback<CoordinatesDTO> {
@@ -94,8 +114,8 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
                         cityResponded.lon = fl.component1()
                         cityResponded.lat = fl.component2()
                     }
-                    cityResponded.city?.let{ cityMame ->
-                        listWeather.find { cityMame.contains(it.city.city as CharSequence)}
+                    cityResponded.city?.let { cityMame ->
+                        listWeather.find { cityMame.contains(it.city.city as CharSequence) }
                             ?.city = cityResponded
                     }
                     Log.i(TAG, "callbackCoordinatesDTO: onResponse: ${listWeather.size}")
@@ -127,7 +147,8 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
                     weatherDTOResponded.info.lat?.let { lat ->
                         weatherDTOResponded.info.lon?.let { lon ->
                             listWeather.find { item ->
-                                item.city.lat == lat && item.city.lon == lon }
+                                item.city.lat == lat && item.city.lon == lon
+                            }
                                 ?.weatherDTO = response.body()
 
                         }
@@ -154,16 +175,7 @@ class WeatherRepositoryImpl private constructor(private val  appContext: Context
         remoteDataSource.getCoordinates(city, callback)
     }
 
-    override fun getWeatherFromLocalStorage(): List<Weather> {
-        val cities = localRepository.getAllCities()
-        return if (cities.isNotEmpty()){
-            Log.i(TAG, "getWeatherFromLocalStorage: from db")
-            cities.map { Weather(it, null) }
-        } else{
-            Log.i(TAG, "getWeatherFromLocalStorage: initialize")
-            initWeatherList()
-        }
-    }
+    override fun getWeatherFromLocalStorage() = localRepository.getAllCitiesAsync()
 
 
 }
