@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.geekbrain.myapplication.WeatherApplication.Companion.MY_LOCATION_PERMISSION
+import com.geekbrain.myapplication.WeatherApplication.Companion.sharedPreferences
 import com.geekbrain.myapplication.databinding.FragmentMainBinding
 import com.geekbrain.myapplication.detailes.DetailsFragment
 import com.geekbrain.myapplication.model.Weather
@@ -45,7 +47,6 @@ class MainFragment : Fragment() {
 
 
     companion object {
-        const val MY_LOCATION_PERMISSION = "LOCATION_PERMISSION"
 
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
@@ -57,7 +58,7 @@ class MainFragment : Fragment() {
 
     private fun setDataSet() {
         activity?.let {
-            isDataSetRus = it.getPreferences(Context.MODE_PRIVATE)
+            isDataSetRus = sharedPreferences
                 .getBoolean(IS_RUS_KEY, false)
             Log.i(TAG, "setDataSet isDataSetRus: $isDataSetRus")
             if (isDataSetRus) {
@@ -69,24 +70,21 @@ class MainFragment : Fragment() {
     }
 
     private fun safePermissions(locationPermission: Boolean) {
-        activity?.let {
             Log.i(TAG, "safePermissions: $locationPermission")
-            val prefs = it.getSharedPreferences("MySharedPref", Context.MODE_PRIVATE)
-            prefs
+
+            sharedPreferences
                 .edit()
                 .putBoolean(MY_LOCATION_PERMISSION, locationPermission)
                 .apply()
-            prefs.registerOnSharedPreferenceChangeListener(viewModel)
 
-        }
 
     }
 
     private fun safeDataSet() {
-        activity?.getPreferences(Context.MODE_PRIVATE)
-                ?.edit()
-                ?.putBoolean(IS_RUS_KEY, isDataSetRus)
-                ?.apply()
+        sharedPreferences
+                .edit()
+                .putBoolean(IS_RUS_KEY, isDataSetRus)
+                .apply()
     }
 
 
@@ -100,7 +98,10 @@ class MainFragment : Fragment() {
     ): View {
         _binding = FragmentMainBinding.inflate(layoutInflater)
         if (!checkPermission()) {
+            safePermissions(false)
             requestPermissions()
+        } else {
+            safePermissions(true)
         }
 
         context?.let {
@@ -111,7 +112,6 @@ class MainFragment : Fragment() {
                 ContextCompat.RECEIVER_EXPORTED
             )
         }
-
         return binding.root
 
     }
@@ -149,7 +149,6 @@ class MainFragment : Fragment() {
             .observe(viewLifecycleOwner, listWeatherObserver)
 
 
-
         binding.currentPoint.mainFragmentRecyclerItemTextView.visibility =
             if (!checkPermission()) {
                 View.GONE
@@ -185,9 +184,19 @@ class MainFragment : Fragment() {
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        sharedPreferences.registerOnSharedPreferenceChangeListener(viewModel)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(viewModel)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
+
         _binding = null
 
     }
@@ -278,7 +287,6 @@ class MainFragment : Fragment() {
                 requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
-
 
         // Provide an additional rationale to the user. This would happen if the user denied the
         // request previously, but didn't check the "Don't ask again" checkbox.

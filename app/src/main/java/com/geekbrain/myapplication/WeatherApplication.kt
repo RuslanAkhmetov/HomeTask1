@@ -2,6 +2,7 @@ package com.geekbrain.myapplication
 
 import android.app.Application
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import androidx.room.Room
 import com.geekbrain.myapplication.repository.LocationRepository
 import com.geekbrain.myapplication.repository.WeatherRepositoryImpl
@@ -12,16 +13,19 @@ import kotlinx.coroutines.internal.synchronized
 
 class WeatherApplication : Application() {
 
-
     override fun onCreate() {
         super.onCreate()
         appInstance = this
         WeatherRepositoryImpl.initialize(this)
         LocationRepository.initialize(this)
+        sharedPreferences = PreferenceManager
+            .getDefaultSharedPreferences(applicationContext)
 
     }
 
     companion object {
+        const val MY_LOCATION_PERMISSION = "LOCATION_PERMISSION"
+        lateinit var  sharedPreferences : SharedPreferences
         private var appInstance: WeatherApplication? = null
         private var db: CityDataBase? = null
         private const val DB_NAME = "Cities.db"

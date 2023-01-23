@@ -5,8 +5,8 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
-import com.geekbrain.myapplication.MainFragment
 import com.geekbrain.myapplication.WeatherApplication
+import com.geekbrain.myapplication.WeatherApplication.Companion.MY_LOCATION_PERMISSION
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
 
@@ -18,11 +18,14 @@ class MainViewModel(
 
     private val TAG = "MainViewModel"
 
+    private var locationPermission: MutableLiveData<Boolean> = MutableLiveData()
+
+
     private var liveDataToObserve: MutableLiveData<AppState> = MutableLiveData()
 
     private var liveDataCurrentPointWeather =
         Transformations.switchMap(locationRepository.weatherCurrentPointStateLiveData)
-                 { MutableLiveData<CurrentPointState>(locationRepository.weatherCurrentPointState) }
+                 { MutableLiveData<CurrentPointState>(locationRepository.weatherCurrentPointState)}
 
     fun getWeatherListLiveData(): MutableLiveData <AppState> {
         liveDataToObserve.postValue(Success(weatherRepository.getWeatherFromRepository()))
@@ -33,16 +36,26 @@ class MainViewModel(
 
 
 
+
     init {
         //Log.i(TAG, "Count: ${localRepository.citiesCount()}")
+        locationPermission.value = WeatherApplication.sharedPreferences
+            .getBoolean(MY_LOCATION_PERMISSION, false)
         startMainViewModel()
+        startLocationService()
+
     }
 
     fun startMainViewModel(){
-            locationRepository.startLocationService()
             refreshDataFromRepository()
             liveDataToObserve.postValue(Success(weatherRepository.getWeatherFromRepository()))
     }
+
+    fun startLocationService(){
+        if (locationPermission.value == true)
+            locationRepository.startLocationService()
+    }
+
 
      private fun refreshDataFromRepository() {
         liveDataToObserve.postValue(Loading)
@@ -57,8 +70,8 @@ class MainViewModel(
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         Log.i(TAG, "onSharedPreferenceChanged: key = $key")
-        if (key == MainFragment.MY_LOCATION_PERMISSION
-            && sharedPreferences?.getBoolean(MainFragment.MY_LOCATION_PERMISSION, false) == true) {
+        if (key == MY_LOCATION_PERMISSION
+            && sharedPreferences?.getBoolean(MY_LOCATION_PERMISSION, false) == true) {
             locationRepository.startLocationService()
         }
 
