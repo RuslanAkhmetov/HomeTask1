@@ -202,6 +202,7 @@ class LocationUpdatesService : Service() {
     fun requestLocationUpdates(context: Context) {
         Log.i(TAG, "Requesting location updates")
         Utils.setRequestingLocationUpdates(context, true)
+
         startService(Intent(context, LocationUpdatesService::class.java))
         Log.i(TAG, "requestLocationUpdates: ")
         try {
@@ -219,7 +220,7 @@ class LocationUpdatesService : Service() {
      * Removes location updates. Note that in this sample we merely log the
      * {@link SecurityException}.
      */
-    fun removeLocationUpdates() {
+    private fun removeLocationUpdates() {
         Log.i(TAG, "Removing location updates")
         try {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback)

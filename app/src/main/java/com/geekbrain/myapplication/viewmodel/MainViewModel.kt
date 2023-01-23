@@ -1,9 +1,12 @@
 package com.geekbrain.myapplication.viewmodel
 
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
+import com.geekbrain.myapplication.MainFragment
+import com.geekbrain.myapplication.WeatherApplication
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
 
@@ -11,7 +14,7 @@ import com.geekbrain.myapplication.viewmodel.AppState.*
 class MainViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     private val locationRepository: LocationRepository = LocationRepository.get(),
-) : ViewModel() {
+) : ViewModel(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val TAG = "MainViewModel"
 
@@ -50,6 +53,15 @@ class MainViewModel(
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                 liveDataToObserve.postValue(Error(e))
             }
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        Log.i(TAG, "onSharedPreferenceChanged: key = $key")
+        if (key == MainFragment.MY_LOCATION_PERMISSION
+            && sharedPreferences?.getBoolean(MainFragment.MY_LOCATION_PERMISSION, false) == true) {
+            locationRepository.startLocationService()
+        }
+
     }
 }
 

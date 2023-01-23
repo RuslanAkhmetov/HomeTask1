@@ -38,8 +38,12 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
         }
 
+        override fun onReceiveCitiesCount(count: Long) {
+            Log.i(TAG, "onReceiveCitiesCount: DataBaseSize = $count")
+        }
+
         override fun onFailure() {
-            TODO("Not yet implemented")
+            Log.i(TAG, "onFailure: Can't receive date from DB")
         }
 
     }

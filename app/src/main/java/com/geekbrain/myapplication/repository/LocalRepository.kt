@@ -6,5 +6,5 @@ interface LocalRepository {
     fun getAllCitiesAsync()
     fun saveEntity(city: City)
     fun deleteCities(id: Long)
-    fun citiesCount() : Long
+    fun citiesCount()
 }

@@ -13,6 +13,7 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
 
     interface DBLoadListener {
         fun onReceiveCitiesFromDB(cities: List<City>)
+        fun onReceiveCitiesCount(count: Long)
         fun onFailure()
     }
 
@@ -28,18 +29,27 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
     }
 
     override fun saveEntity(city: City) {
-        //Thread {
+        Thread {
             localDaoSource.insert(convertCityToCityEntity(city))
             Log.i(TAG, "saveEntity: ++")
-        //}.start()
+        }.start()
     }
 
     override fun deleteCities(finalId: Long) {
-        localDaoSource.deleteLast(finalId)
+        Thread {
+            localDaoSource.deleteLast(finalId)
+        }.start()
     }
 
-    override fun citiesCount(): Long {
-        return localDaoSource.cityEntityCount()
+    override fun citiesCount() {
+        val handler = Handler()
+
+        Thread {
+            val count = localDaoSource.cityEntityCount()
+            handler.post {
+                listener.onReceiveCitiesCount(count)
+            }
+        }. start()
     }
 
     private fun convertCityEntityToCity(entityList: List<CityEntity>): List<City> {

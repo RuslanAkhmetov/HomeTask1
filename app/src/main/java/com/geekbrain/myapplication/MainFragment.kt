@@ -32,6 +32,7 @@ import com.google.android.material.snackbar.Snackbar
 
 private const val IS_RUS_KEY = "IS_RUS_KEY"
 
+
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
@@ -44,6 +45,8 @@ class MainFragment : Fragment() {
 
 
     companion object {
+        const val MY_LOCATION_PERMISSION = "LOCATION_PERMISSION"
+
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
     }
@@ -65,13 +68,25 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun safeDataSet() {
+    private fun safePermissions(locationPermission: Boolean) {
         activity?.let {
-            it.getPreferences(Context.MODE_PRIVATE)
+            Log.i(TAG, "safePermissions: $locationPermission")
+            val prefs = it.getSharedPreferences("MySharedPref", Context.MODE_PRIVATE)
+            prefs
                 .edit()
-                .putBoolean(IS_RUS_KEY, isDataSetRus)
+                .putBoolean(MY_LOCATION_PERMISSION, locationPermission)
                 .apply()
+            prefs.registerOnSharedPreferenceChangeListener(viewModel)
+
         }
+
+    }
+
+    private fun safeDataSet() {
+        activity?.getPreferences(Context.MODE_PRIVATE)
+                ?.edit()
+                ?.putBoolean(IS_RUS_KEY, isDataSetRus)
+                ?.apply()
     }
 
 
@@ -309,10 +324,11 @@ class MainFragment : Fragment() {
         Log.i(TAG, "onRequestPermissionsResult: $requestCode")
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                safePermissions(true)
                 Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-
                 binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.VISIBLE
             } else {
+                safePermissions(false)
                 Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
                 binding.currentPoint.mainFragmentRecyclerItemTextView.visibility = View.GONE
             }

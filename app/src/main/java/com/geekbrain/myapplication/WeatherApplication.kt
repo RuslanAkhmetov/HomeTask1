@@ -1,6 +1,7 @@
 package com.geekbrain.myapplication
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.geekbrain.myapplication.repository.LocationRepository
 import com.geekbrain.myapplication.repository.WeatherRepositoryImpl
@@ -10,11 +11,14 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 
 class WeatherApplication : Application() {
+
+
     override fun onCreate() {
         super.onCreate()
         appInstance = this
         WeatherRepositoryImpl.initialize(this)
         LocationRepository.initialize(this)
+
     }
 
     companion object {
@@ -36,7 +40,7 @@ class WeatherApplication : Application() {
                             CityDataBase::class.java,
                             DB_NAME
                         )
-                            .allowMainThreadQueries()
+                            //.allowMainThreadQueries()
                             .build()
                     }
                 }
