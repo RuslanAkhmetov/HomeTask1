@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.MutableLiveData
 import com.geekbrain.myapplication.WeatherApplication
 import com.geekbrain.myapplication.model.*
 import com.geekbrain.myapplication.model.geoKod.CoordinatesDTO
@@ -22,6 +23,12 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
     private val remoteDataSource = RemoteDataSource()
 
     var listWeather: MutableList<Weather> = mutableListOf()
+
+    var requestLogFromDB: MutableList<RequestLog> = mutableListOf()
+
+    override var requestLogLiveData: MutableLiveData<MutableList<RequestLog>> = MutableLiveData()
+
+
 
     private val listener = object : LocalRepositoryImpl.DBLoadListener {
         @RequiresApi(Build.VERSION_CODES.N)
@@ -42,11 +49,29 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
             Log.i(TAG, "onReceiveCitiesCount: DataBaseSize = $count")
         }
 
+
+        override fun onReceiveRequestLog(requestLog: List<RequestLog>) {
+            requestLogFromDB = requestLog as MutableList<RequestLog>
+            requestLogLiveData.postValue(requestLogFromDB)
+        }
+
         override fun onFailure() {
             Log.i(TAG, "onFailure: Can't receive date from DB")
         }
 
     }
+
+    override fun getWeatherFromLocalStorage() = localRepository.getAllCitiesAsync()
+
+    override fun saveRequestToDB(requestLog: RequestLog) {
+        localRepository.saveRequestToLog(requestLog)
+    }
+
+    override fun makeRequestLog() {
+        localRepository.getRequestLog()
+    }
+
+    override fun getRequestsLog(): MutableList<RequestLog> = requestLogFromDB
 
     private val localRepository: LocalRepository =
         LocalRepositoryImpl(WeatherApplication.getCityDao(), listener)
@@ -64,6 +89,7 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
         }
 
     }
+
 
     override fun getWeatherFromRepository(): MutableList<Weather> {
         return listWeather
@@ -179,7 +205,7 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
         remoteDataSource.getCoordinates(city, callback)
     }
 
-    override fun getWeatherFromLocalStorage() = localRepository.getAllCitiesAsync()
+
 
 
 }

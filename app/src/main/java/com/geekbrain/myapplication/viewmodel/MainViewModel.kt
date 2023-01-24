@@ -20,21 +20,20 @@ class MainViewModel(
 
     private var locationPermission: MutableLiveData<Boolean> = MutableLiveData()
 
-
-    private var liveDataToObserve: MutableLiveData<AppState> = MutableLiveData()
+    private var weatherLiveData: MutableLiveData<AppState> = MutableLiveData()
 
     private var liveDataCurrentPointWeather =
         Transformations.switchMap(locationRepository.weatherCurrentPointStateLiveData)
                  { MutableLiveData<CurrentPointState>(locationRepository.weatherCurrentPointState)}
 
+
+
     fun getWeatherListLiveData(): MutableLiveData <AppState> {
-        liveDataToObserve.postValue(Success(weatherRepository.getWeatherFromRepository()))
-        return liveDataToObserve
+        weatherLiveData.postValue(Success(weatherRepository.getWeatherFromRepository()))
+        return weatherLiveData
     }
 
     fun getCurrentPointWeather() = liveDataCurrentPointWeather
-
-
 
 
     init {
@@ -43,12 +42,11 @@ class MainViewModel(
             .getBoolean(MY_LOCATION_PERMISSION, false)
         startMainViewModel()
         startLocationService()
-
     }
 
     fun startMainViewModel(){
             refreshDataFromRepository()
-            liveDataToObserve.postValue(Success(weatherRepository.getWeatherFromRepository()))
+            weatherLiveData.postValue(Success(weatherRepository.getWeatherFromRepository()))
     }
 
     fun startLocationService(){
@@ -58,15 +56,17 @@ class MainViewModel(
 
 
      private fun refreshDataFromRepository() {
-        liveDataToObserve.postValue(Loading)
+        weatherLiveData.postValue(Loading)
             try {
                 weatherRepository.refreshWeatherList()
 
             } catch (e: Exception) {
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
-                liveDataToObserve.postValue(Error(e))
+                weatherLiveData.postValue(Error(e))
             }
     }
+
+
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         Log.i(TAG, "onSharedPreferenceChanged: key = $key")

@@ -3,8 +3,10 @@ package com.geekbrain.myapplication.repository
 import android.os.Handler
 import android.util.Log
 import com.geekbrain.myapplication.model.City
+import com.geekbrain.myapplication.model.RequestLog
 import com.geekbrain.myapplication.room.CityDao
 import com.geekbrain.myapplication.room.CityEntity
+import com.geekbrain.myapplication.room.RequestEntity
 
 private const val TAG = "LocalRepositoryImpl"
 
@@ -14,11 +16,11 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
     interface DBLoadListener {
         fun onReceiveCitiesFromDB(cities: List<City>)
         fun onReceiveCitiesCount(count: Long)
+        fun onReceiveRequestLog(requestLog: List<RequestLog>)
         fun onFailure()
     }
 
     override fun getAllCitiesAsync() {
-
         val handler = Handler()
         Thread{
             val cities = convertCityEntityToCity(localDaoSource.all())
@@ -27,6 +29,25 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
             }
         }.start()
     }
+
+    override fun getRequestLog() {
+        val handler = Handler()
+        Thread{
+            val requests = localDaoSource.allRequest()
+            handler.post{
+                listener.onReceiveRequestLog(requests)
+            }
+        }.start()
+    }
+
+    override fun saveRequestToLog(requestLog: RequestLog) {
+        Thread{
+        val id = localDaoSource.getCityId(requestLog.city)
+        localDaoSource.insertRequest(convertRequestLogToRequestEntity(requestLog, id))
+       }.start()
+    }
+
+
 
     override fun saveEntity(city: City) {
         Thread {
@@ -52,6 +73,8 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
         }. start()
     }
 
+
+
     private fun convertCityEntityToCity(entityList: List<CityEntity>): List<City> {
              return entityList.map {
                 City(it.city, it.isRus, it.lat, it.lon)
@@ -70,6 +93,18 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
             )
         } else {
             throw java.lang.IllegalArgumentException("City.parameter  can't be null")
+        }
+    }
+
+    private fun convertRequestLogToRequestEntity(requestLog: RequestLog, id: Long): RequestEntity {
+        if(requestLog.city != null && requestLog.temperature != null && requestLog.timestamp != null
+            && requestLog.condition!= null && id != null) {
+            return RequestEntity(requestLog.timestamp,
+                id,
+                requestLog.temperature,
+                requestLog.condition)
+        } else{
+            throw IllegalArgumentException("RequestLog or Id is null")
         }
     }
 

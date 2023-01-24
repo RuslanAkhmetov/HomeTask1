@@ -16,4 +16,5 @@
     <string name="morning">Morning</string>
     <string name="day">Day</string>
     <string name="russian_other">Русские/Другие</string>
+    <string name="menu_requestslog">Журнал Запросов</string>
 </resources>

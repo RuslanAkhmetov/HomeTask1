@@ -30,4 +30,5 @@
     <string name="morning">Morning</string>
     <string name="day">Day</string>
     <string name="russian_other">Russian/Other</string>
+    <string name="menu_requestslog">RequestsLog</string>
 </resources>
