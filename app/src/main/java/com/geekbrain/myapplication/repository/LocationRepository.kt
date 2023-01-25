@@ -19,7 +19,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LocationRepository private constructor(private val appContext: Context){ //ApplicationContext
+class LocationRepository private constructor(private val appContext: Context):
+    SharedPreferences.OnSharedPreferenceChangeListener { //ApplicationContext
 
     companion object {
         private var instance: LocationRepository? = null
@@ -32,6 +33,7 @@ class LocationRepository private constructor(private val appContext: Context){ /
 
         fun get() =
             instance ?: throw java.lang.RuntimeException("LocationRepository is not initialized")
+
 
     }
 
@@ -187,6 +189,11 @@ class LocationRepository private constructor(private val appContext: Context){ /
             throw t
         }
     }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        TODO("Not yet implemented")
+    }
+
 
 }
 

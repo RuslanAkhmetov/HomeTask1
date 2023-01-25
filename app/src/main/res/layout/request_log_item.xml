@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_5_dp"
         android:layout_marginTop="@dimen/margin_5_dp"
-        android:textColor="@color/teal_700"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_size"
         tools:text="Header" />
 
     <View

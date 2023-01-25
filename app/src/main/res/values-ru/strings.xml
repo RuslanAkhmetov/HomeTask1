@@ -17,4 +17,10 @@
     <string name="day">Day</string>
     <string name="russian_other">Русские/Другие</string>
     <string name="menu_requestslog">Журнал Запросов</string>
+    <string name="content_provider">Content Provider</string>
+    <string name="close">Закрыть</string>
+    <string name="explanation">Объяснение</string>
+    <string name="read_contacts">Доступ к контактам</string>
+    <string name="access_granted">Доступ разрешен</string>
+    <string name="access_denied">Доступ запрещен</string>
 </resources>

@@ -45,6 +45,7 @@ class WeatherApplication : Application() {
                             DB_NAME
                         )
                             //.allowMainThreadQueries()
+                            .fallbackToDestructiveMigration()
                             .build()
                     }
                 }

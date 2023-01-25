@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="hairline">1dp</dimen>
+    <dimen name="main_container_text_size">15sp</dimen>
 </resources>

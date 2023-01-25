@@ -10,4 +10,9 @@
 
     <color name="loadingBackground">#80FFFFFF</color>
     <color name="fragmentBackground">#FFFFFF</color>
+
+    <color name="actionbar_color">#314e6e</color>
+    <color name="tabs_color">#2a4562</color>
+    <color name="item_selected">#2a4562</color>
+
 </resources>

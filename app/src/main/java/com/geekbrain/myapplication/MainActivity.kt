@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.geekbrain.myapplication.contentprovider.ContentProvider
 import com.geekbrain.myapplication.databinding.ActivityMainBinding
 import com.geekbrain.myapplication.log.LogFragment
 
@@ -40,6 +41,16 @@ class MainActivity : AppCompatActivity() {
                         .add(R.id.container, LogFragment.newInstance())
                         .addToBackStack("")
                         .commitAllowingStateLoss()
+                }
+                true
+            }
+            R.id.menu_content_provider -> {
+                supportFragmentManager.apply {
+                    beginTransaction()
+                        .add(R.id.container, ContentProvider.newInstance())
+                        .addToBackStack("")
+                        .commitAllowingStateLoss()
+
                 }
                 true
             }

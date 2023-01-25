@@ -2,10 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+   <item
+       android:id="@+id/menu_content_provider"
+       android:icon="@drawable/ic_launch"
+       android:title="@string/content_provider"
+       app:showAsAction="always"/>
+
     <item
         android:id="@+id/menu_requestslog"
         android:title="@string/menu_requestslog"
         android:icon="@drawable/ic_baseline_history_24"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
 
 </menu>

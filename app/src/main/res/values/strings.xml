@@ -31,4 +31,10 @@
     <string name="day">Day</string>
     <string name="russian_other">Russian/Other</string>
     <string name="menu_requestslog">RequestsLog</string>
+    <string name="content_provider">Content Provider</string>
+    <string name="read_contacts">Contacts access</string>
+    <string name="explanation">Explanation</string>
+    <string name="access_granted">Access granted</string>
+    <string name="access_denied">Access denied</string>
+    <string name="close">Close</string>
 </resources>
