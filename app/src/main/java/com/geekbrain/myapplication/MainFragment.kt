@@ -76,8 +76,6 @@ class MainFragment : Fragment() {
                 .edit()
                 .putBoolean(MY_LOCATION_PERMISSION, locationPermission)
                 .apply()
-
-
     }
 
     private fun safeDataSet() {

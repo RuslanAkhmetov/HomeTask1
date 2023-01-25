@@ -28,12 +28,9 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
     override var requestLogLiveData: MutableLiveData<MutableList<RequestLog>> = MutableLiveData()
 
-
-
     private val listener = object : LocalRepositoryImpl.DBLoadListener {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceiveCitiesFromDB(cities: List<City>) {
-
             if (cities.isNotEmpty()) {
                 Log.i(TAG, "getWeatherFromLocalStorage: from db")
                 listWeather = cities.map { Weather(it, null) } as MutableList<Weather>
@@ -42,7 +39,6 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
                 listWeather = initWeatherList() as MutableList<Weather>
             }
             getWeatherListFromServer(listWeather)
-
         }
 
         override fun onReceiveCitiesCount(count: Long) {
@@ -52,6 +48,7 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
         override fun onReceiveRequestLog(requestLog: List<RequestLog>) {
             requestLogFromDB = requestLog as MutableList<RequestLog>
+            Log.i(TAG, "onReceiveRequestLog: requestLogFromDB = ${requestLogFromDB.size}")
             requestLogLiveData.postValue(requestLogFromDB)
         }
 
@@ -60,6 +57,9 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
         }
 
     }
+
+    private val localRepository: LocalRepository =
+        LocalRepositoryImpl(WeatherApplication.getCityDao(), listener)
 
     override fun getWeatherFromLocalStorage() = localRepository.getAllCitiesAsync()
 
@@ -73,8 +73,6 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
     override fun getRequestsLog(): MutableList<RequestLog> = requestLogFromDB
 
-    private val localRepository: LocalRepository =
-        LocalRepositoryImpl(WeatherApplication.getCityDao(), listener)
 
 
     companion object {
@@ -136,7 +134,6 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
                     response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)
                         ?.GeoObject
                 ) {
-
                     cityResponded.city = this?.name + ", " + this?.description
                     cityResponded.isRus = cityResponded.city?.contains("Россия")
                     val fl = this?.Point?.pos?.split(" ")?.map { it.toFloat() }
@@ -161,13 +158,11 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
         }
 
-
         override fun onFailure(call: Call<CoordinatesDTO>, t: Throwable) {
             Log.i(TAG, "callbackCoordinatesDTO : onFailure: ")
             t.printStackTrace()
             throw t
         }
-
     }
 
     private val callbackWeatherDTO = object : Callback<WeatherDTO> {
@@ -204,8 +199,5 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
         Log.i(TAG, "getCityCoordinates: ")
         remoteDataSource.getCoordinates(city, callback)
     }
-
-
-
 
 }

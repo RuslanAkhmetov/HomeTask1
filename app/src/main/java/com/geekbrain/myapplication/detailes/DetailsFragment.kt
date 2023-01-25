@@ -7,9 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentDetailsBinding
+import com.geekbrain.myapplication.model.RequestLog
 import com.geekbrain.myapplication.model.Weather
+import com.geekbrain.myapplication.viewmodel.LogViewModel
+import java.util.*
 
 
 class DetailsFragment : Fragment() {
@@ -34,6 +38,8 @@ class DetailsFragment : Fragment() {
         }
     }
 
+    private val logViewModel by viewModels<LogViewModel>()
+
     private val detailsFragmentAdapter = HourlyForeCastAdapter()
 
     override fun onCreateView(
@@ -50,7 +56,18 @@ class DetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val weatherNullable: Weather? = arguments?.getParcelable(BUNDLE_EXTRA)
-        weatherNullable?.let { weather = it }
+        weatherNullable?.let { weather = it  }
+
+        if (weather.city.city != null && weather.weatherDTO?.fact?.temp !=null
+            && weather.weatherDTO?.fact?.condition != null
+        ) {
+            val request = RequestLog(
+                city = weather.city.city!!,
+                timestamp = Date().time,
+                temperature = weather.weatherDTO!!.fact?.temp?.toFloat()!!,
+                condition = weather.weatherDTO!!.fact?.condition!!)
+            logViewModel.saveRequestToDB(request)
+        }
 
         binding.mainView.visibility = View.GONE
         binding.loadingLayout.visibility = View.VISIBLE

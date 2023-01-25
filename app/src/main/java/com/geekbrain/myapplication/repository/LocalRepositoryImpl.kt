@@ -41,10 +41,11 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
     }
 
     override fun saveRequestToLog(requestLog: RequestLog) {
-        Thread{
-        val id = localDaoSource.getCityId(requestLog.city)
-        localDaoSource.insertRequest(convertRequestLogToRequestEntity(requestLog, id))
-       }.start()
+        Thread {
+            val id = localDaoSource.getCityId(requestLog.city)
+            Log.i(TAG, "saveRequestToLog: id= $id")
+            localDaoSource.insertRequest(convertRequestLogToRequestEntity(requestLog, id))
+        }.start()
     }
 
 

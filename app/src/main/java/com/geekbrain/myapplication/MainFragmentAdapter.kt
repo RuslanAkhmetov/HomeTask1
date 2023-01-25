@@ -37,7 +37,8 @@ class MainFragmentAdapter (private var onItemViewClickListener: OnItemViewClickL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
         return MainViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.fragment_main_recycler_item, parent, false) as View)
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.fragment_main_recycler_item, parent, false) as View)
 
     }
 

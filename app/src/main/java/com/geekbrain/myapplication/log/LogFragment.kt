@@ -1,18 +1,20 @@
-package com.geekbrain.myapplication
+package com.geekbrain.myapplication.log
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.geekbrain.myapplication.databinding.FragmentRequestsLogBinding
 import com.geekbrain.myapplication.model.RequestLog
 import com.geekbrain.myapplication.viewmodel.LogViewModel
 import kotlinx.android.synthetic.main.fragment_requests_log.*
 
 class LogFragment: Fragment() {
+    
+    private val TAG = "LogFragment"
 
     private var _binding : FragmentRequestsLogBinding? = null
     private val binding get() = _binding!!
@@ -39,12 +41,17 @@ class LogFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         logFragmentRecyclerView.adapter = adapter
-        logViewModel.requestLogLiveData.observe(viewLifecycleOwner, {
+        
+        logViewModel.requestLogLiveData.observe(viewLifecycleOwner) {
+            Log.i(TAG, "onViewCreated: observer: ${it.size}")
             renderData(it)
-        })
+        }
+
         logViewModel.makeRequestsLog()
 
-        logViewModel.requestLogLiveData
+        logViewModel.getRequestsLog()
+
+        Log.i(TAG, "onViewCreated:  logViewModel.requestLogLiveData: ${logViewModel.requestLogLiveData.value}")
 
     }
 
@@ -55,6 +62,7 @@ class LogFragment: Fragment() {
 
     private fun renderData(requestsLog: MutableList<RequestLog>?) {
         binding.logFragmentRecyclerView.visibility = View.VISIBLE
+        Log.i(TAG, "renderData: logsize = ${requestsLog?.size}")
         binding.includedLoadingLayout.loadingLayout.visibility = View.GONE
         requestsLog?.let { adapter.setLogData(it) }
 

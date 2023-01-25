@@ -188,8 +188,5 @@ class LocationRepository private constructor(private val appContext: Context){ /
         }
     }
 
-
-
-
 }
 

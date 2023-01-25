@@ -13,8 +13,7 @@
         android:padding="@dimen/recycler_item_padding"
         android:textSize="@dimen/recycler_item_text_size"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Москва" />
+        app:layout_constraintTop_toTopOf="parent"   />
 
     <View
         android:layout_width="match_parent"
