@@ -10,10 +10,14 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.ContentResolver
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentContentProviderBinding
@@ -22,6 +26,7 @@ const val REQUEST_CODE = 42
 
 class ContentProvider : Fragment() {
     private val TAG = "ContentProvider"
+    private val granted = PackageManager.PERMISSION_GRANTED
     private var _binding: FragmentContentProviderBinding? = null
     private val binding get() = _binding!!
 
@@ -29,11 +34,12 @@ class ContentProvider : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentContentProviderBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (!checkPermission()) {
@@ -56,7 +62,7 @@ class ContentProvider : Fragment() {
 
     private fun checkPermission(): Boolean {
         var result = false
-        val granted = PackageManager.PERMISSION_GRANTED
+
         context?.let {
             val readContacts =
                 ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS) == granted
@@ -64,7 +70,9 @@ class ContentProvider : Fragment() {
                 ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS) == granted
             val readPhoneStates =
                 ContextCompat.checkSelfPermission(it, Manifest.permission.READ_PHONE_STATE) == granted
-            result = readContacts && readPhoneNo && readPhoneStates
+            val phoneCall =
+                ContextCompat.checkSelfPermission(it, Manifest.permission.CALL_PHONE) == granted
+            result = readContacts && readPhoneNo && readPhoneStates && phoneCall
         }
         return result
     }
@@ -77,50 +85,43 @@ class ContentProvider : Fragment() {
             val cursorWithContacts: Cursor? = contentResolver.query(
                 ContactsContract.Contacts.CONTENT_URI,
                 null,
+                ContactsContract.Contacts.DISPLAY_NAME + " LIKE '0%'",
                 null,
-                null,
-                ContactsContract.Contacts.DISPLAY_NAME + "ASC"
+                null
             )
 
-
-
             cursorWithContacts?.let { cursor ->
-                val max_contacts = minOf(5,cursor.count)
-                for (i in 0..max_contacts) {
+                for (i in 0..cursor.count) {
                     if (cursor.moveToPosition(i)) {
-
                         val idColumnNumber = cursor.getColumnIndex(ContactsContract.Contacts._ID)
                         val id = cursor.getString(idColumnNumber)
-                        Log.i(TAG, "getContacts: id = $id")
-                        val contactsNameColIndex = cursor
-                            .getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-                        val name = cursor
-                            .getString(contactsNameColIndex)
+                        val contactsNameColIndex =
+                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                        val name =
+                            cursor.getString(contactsNameColIndex)
                         var phoneNo = ""
                         val contactsHasPhoneNumberColIndex =
                             cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
                         if (cursor.getInt(contactsHasPhoneNumberColIndex) > 0) {
-
-                            val phoneCur = contentResolver.query(
+                            val phoneCursor = contentResolver.query(
                                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                                 null,
                                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                arrayOf(id.toString()),
+                                arrayOf(id),
                                 null
                             )
 
-                            if (phoneCur?.moveToPosition(0)== true) {
+                            if (phoneCursor?.moveToNext()== true) {
                                 val contactsPhoneColIndex =
-                                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                                Log.i(TAG, "getContacts: contactsPhoneColIndex $contactsHasPhoneNumberColIndex")
-                                Log.i(TAG, "getContacts: ${phoneCur}")
-                                phoneNo = phoneCur.getString(contactsPhoneColIndex)
+                                    phoneCursor.getColumnIndex(
+                                        ContactsContract.CommonDataKinds.Phone.NUMBER
+                                    )
+                                phoneNo = phoneCursor.getString(contactsPhoneColIndex)
                             }
-                            Log.i(TAG, "getContacts: $phoneNo")
-                            phoneCur?.close()
+                            phoneCursor?.close()
                         }
 
-                        addView(it, "$name-$phoneNo")
+                        addView(it, name, phoneNo)
 
                     }
                 }
@@ -129,14 +130,26 @@ class ContentProvider : Fragment() {
         }
     }
 
-    private fun addView(context: Context, textToShow: String?) {
+    private fun addView(context: Context, name: String?, phoneNo: String?) {
+        val textToShow ="$name - $phoneNo"
         binding.containerForContacts.addView(AppCompatTextView(context).apply {
             text = textToShow
             textSize = resources.getDimension(R.dimen.main_container_text_size)
+            setOnClickListener {
+                val mIntent = Intent(Intent.ACTION_CALL)
+                mIntent.data = Uri.parse("tel:$phoneNo")
+                try {
+                    startActivity(mIntent)
+                } catch (e : SecurityException){
+                    e.printStackTrace()
+                }
+            }
         })
 
     }
 
+    @Suppress("DEPRECATION")
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun requestPermission() {
         val shouldRequestRationally =
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)
@@ -150,7 +163,8 @@ class ContentProvider : Fragment() {
                         arrayOf(
                             Manifest.permission.READ_CONTACTS,
                             Manifest.permission.READ_PHONE_NUMBERS,
-                            Manifest.permission.READ_PHONE_STATE
+                            Manifest.permission.READ_PHONE_STATE,
+                            Manifest.permission.CALL_PHONE,
                         ), REQUEST_CODE
                     )
                 }
@@ -164,12 +178,14 @@ class ContentProvider : Fragment() {
                 arrayOf(
                     Manifest.permission.READ_CONTACTS,
                     Manifest.permission.READ_PHONE_NUMBERS,
-                    Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.CALL_PHONE,
                 ), REQUEST_CODE
             )
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -178,14 +194,15 @@ class ContentProvider : Fragment() {
         when (requestCode) {
             REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[2] == PackageManager.PERMISSION_GRANTED
+                    grantResults[0] == granted &&
+                    grantResults[1] == granted &&
+                    grantResults[2] == granted &&
+                    grantResults[3] == granted
                 ) {
                     getContacts()
                 } else {
                     Log.i(TAG, "onRequestPermissionsResult: PackageManager.PERMISSION_GRANTED = ${PackageManager.PERMISSION_GRANTED}")
-                    Log.i(TAG, "onRequestPermissionsResult: grantResults = ${grantResults[0]} ${grantResults[1]} ${grantResults[2]}")
+                    Log.i(TAG, "onRequestPermissionsResult: grantResults = ${grantResults[0]} ${grantResults[1]} ${grantResults[2]} ${grantResults[3]}")
                     AlertDialog.Builder(context)
                         .setTitle(getString(R.string.read_contacts))
                         .setMessage(getString(R.string.explanation))
