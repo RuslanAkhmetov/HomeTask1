@@ -13,13 +13,15 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.appcompat.widget.AppCompatTextView
 import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentContentProviderBinding
 
 const val REQUEST_CODE = 42
 
-class ContentProvider: Fragment() {
+class ContentProvider : Fragment() {
+    private val TAG = "ContentProvider"
     private var _binding: FragmentContentProviderBinding? = null
     private val binding get() = _binding!!
 
@@ -34,7 +36,7 @@ class ContentProvider: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(!checkPermission()){
+        if (!checkPermission()) {
             requestPermission()
         } else {
             getContacts()
@@ -46,16 +48,27 @@ class ContentProvider: Fragment() {
         _binding = null
     }
 
-    companion object{
+    companion object {
         @JvmStatic
         fun newInstance() =
             ContentProvider()
     }
 
-    private fun checkPermission(): Boolean =
+    private fun checkPermission(): Boolean {
+        var result = false
+        val granted = PackageManager.PERMISSION_GRANTED
         context?.let {
-                ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS)
-            }  == PackageManager.PERMISSION_GRANTED
+            val readContacts =
+                ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS) == granted
+            val readPhoneNo =
+                ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS) == granted
+            val readPhoneStates =
+                ContextCompat.checkSelfPermission(it, Manifest.permission.READ_PHONE_STATE) == granted
+            result = readContacts && readPhoneNo && readPhoneStates
+        }
+        return result
+    }
+
 
     private fun getContacts() {
         context?.let {
@@ -69,22 +82,50 @@ class ContentProvider: Fragment() {
                 ContactsContract.Contacts.DISPLAY_NAME + "ASC"
             )
 
-            cursorWithContacts?.let {
-                cursor ->
-                for (i in 0..cursor.count) {
-                    if(cursor.moveToPosition(i)){
-                        val colIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
 
+
+            cursorWithContacts?.let { cursor ->
+                val max_contacts = minOf(5,cursor.count)
+                for (i in 0..max_contacts) {
+                    if (cursor.moveToPosition(i)) {
+
+                        val idColumnNumber = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                        val id = cursor.getString(idColumnNumber)
+                        Log.i(TAG, "getContacts: id = $id")
+                        val contactsNameColIndex = cursor
+                            .getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
                         val name = cursor
-                            .getString(colIndex)
-                        addView(it, name)
+                            .getString(contactsNameColIndex)
+                        var phoneNo = ""
+                        val contactsHasPhoneNumberColIndex =
+                            cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+                        if (cursor.getInt(contactsHasPhoneNumberColIndex) > 0) {
+
+                            val phoneCur = contentResolver.query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                arrayOf(id.toString()),
+                                null
+                            )
+
+                            if (phoneCur?.moveToPosition(0)== true) {
+                                val contactsPhoneColIndex =
+                                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                Log.i(TAG, "getContacts: contactsPhoneColIndex $contactsHasPhoneNumberColIndex")
+                                Log.i(TAG, "getContacts: ${phoneCur}")
+                                phoneNo = phoneCur.getString(contactsPhoneColIndex)
+                            }
+                            Log.i(TAG, "getContacts: $phoneNo")
+                            phoneCur?.close()
+                        }
+
+                        addView(it, "$name-$phoneNo")
 
                     }
                 }
             }
-
             cursorWithContacts?.close()
-
         }
     }
 
@@ -100,12 +141,18 @@ class ContentProvider: Fragment() {
         val shouldRequestRationally =
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)
 
-        if (shouldRequestRationally){
+        if (shouldRequestRationally) {
             AlertDialog.Builder(context)
                 .setTitle(getString(R.string.read_contacts))
                 .setMessage(getString(R.string.explanation))
                 .setPositiveButton(getString(R.string.access_granted)) { _, _ ->
-                    requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQUEST_CODE)
+                    requestPermissions(
+                        arrayOf(
+                            Manifest.permission.READ_CONTACTS,
+                            Manifest.permission.READ_PHONE_NUMBERS,
+                            Manifest.permission.READ_PHONE_STATE
+                        ), REQUEST_CODE
+                    )
                 }
                 .setNegativeButton(getString(R.string.access_denied)) { dialog, _ ->
                     dialog.dismiss()
@@ -113,7 +160,13 @@ class ContentProvider: Fragment() {
                 .create()
                 .show()
         } else {
-            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQUEST_CODE)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.READ_PHONE_NUMBERS,
+                    Manifest.permission.READ_PHONE_STATE
+                ), REQUEST_CODE
+            )
         }
     }
 
@@ -122,16 +175,21 @@ class ContentProvider: Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        when (requestCode){
+        when (requestCode) {
             REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED
+                ) {
                     getContacts()
                 } else {
+                    Log.i(TAG, "onRequestPermissionsResult: PackageManager.PERMISSION_GRANTED = ${PackageManager.PERMISSION_GRANTED}")
+                    Log.i(TAG, "onRequestPermissionsResult: grantResults = ${grantResults[0]} ${grantResults[1]} ${grantResults[2]}")
                     AlertDialog.Builder(context)
                         .setTitle(getString(R.string.read_contacts))
                         .setMessage(getString(R.string.explanation))
-                        .setNegativeButton(getString(R.string.close)) {dialog, _ ->
+                        .setNegativeButton(getString(R.string.close)) { dialog, _ ->
                             dialog.dismiss()
                         }
                         .create()

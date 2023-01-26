@@ -3,8 +3,8 @@ package com.geekbrain.myapplication.model.weatherDTO
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import com.google.gson.annotations.Expose
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 @Parcelize
 class Forecast (

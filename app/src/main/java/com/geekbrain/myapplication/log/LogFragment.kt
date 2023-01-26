@@ -7,10 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.RecyclerView
+import com.geekbrain.myapplication.R
 import com.geekbrain.myapplication.databinding.FragmentRequestsLogBinding
 import com.geekbrain.myapplication.model.RequestLog
 import com.geekbrain.myapplication.viewmodel.LogViewModel
-import kotlinx.android.synthetic.main.fragment_requests_log.*
 
 class LogFragment: Fragment() {
     
@@ -40,7 +41,7 @@ class LogFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        logFragmentRecyclerView.adapter = adapter
+        view.findViewById<RecyclerView>(R.id.logFragmentRecyclerView).adapter = adapter
         
         logViewModel.requestLogLiveData.observe(viewLifecycleOwner) {
             Log.i(TAG, "onViewCreated: observer: ${it.size}")
