@@ -1,6 +1,7 @@
 package com.geekbrain.myapplication
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -103,6 +104,7 @@ class MainFragment : Fragment() {
         }
 
         context?.let {
+            @Suppress("DEPRECATION")
             registerReceiver(
                 it,
                 connectivityActionReceiver,
@@ -140,11 +142,19 @@ class MainFragment : Fragment() {
             renderData(it)
         }
 
+        val currentPointWeatherObserver2 = Observer<String?> {
+            showAddressDialog(it)
+        }
+
+
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
 
         viewModel.getWeatherListLiveData()
             .observe(viewLifecycleOwner, listWeatherObserver)
+
+        viewModel.getCurrentAddressLocation()
+            .observe(viewLifecycleOwner, currentPointWeatherObserver2)
 
 
         binding.currentPoint.mainFragmentRecyclerItemTextView.visibility =
@@ -156,6 +166,8 @@ class MainFragment : Fragment() {
 
 
         setDataSet()
+
+
 
         binding.currentPoint.mainFragmentRecyclerItemTextView.setOnClickListener {
             if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
@@ -174,6 +186,11 @@ class MainFragment : Fragment() {
         }
 
         binding.mainFragmentRecyclerView.adapter = adapter
+
+        binding.myLocationButton.setOnClickListener{
+                viewModel.getCurrentLocation()
+
+        }
 
         binding.mainFragmentFAB.setOnClickListener {
             changeWeatherDataSet()
@@ -194,7 +211,6 @@ class MainFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         _binding = null
 
     }
@@ -278,6 +294,7 @@ class MainFragment : Fragment() {
             )
         } == PackageManager.PERMISSION_GRANTED
 
+    @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.M)
     private fun requestPermissions() {
         val shouldProvideRationale =
@@ -320,6 +337,7 @@ class MainFragment : Fragment() {
         }
     }
 
+    @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -352,6 +370,19 @@ class MainFragment : Fragment() {
             }
 
         }
+
+    }
+
+    private fun showAddressDialog(address: String){
+        AlertDialog.Builder(activity)
+            .setTitle("Ваш адресс")
+            .setMessage(address)
+            .setPositiveButton("Узнать погоду"){_,_ ->
+
+            }
+            .setNegativeButton("Не надо"){dialog, _ -> dialog.dismiss()}
+            .create()
+            .show()
 
     }
 

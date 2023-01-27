@@ -1,12 +1,19 @@
 package com.geekbrain.myapplication.repository
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.*
+import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.geekbrain.myapplication.model.City
@@ -19,8 +26,10 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LocationRepository private constructor(private val appContext: Context):
-    SharedPreferences.OnSharedPreferenceChangeListener { //ApplicationContext
+class LocationRepository private constructor(private val appContext: Context) { //ApplicationContext
+    private val TAG = LocationRepository::class.java.simpleName
+    private val MIN_DISTANCE = 100f
+    private val REFRESH_PERIOD = 600000L
 
     companion object {
         private var instance: LocationRepository? = null
@@ -31,11 +40,14 @@ class LocationRepository private constructor(private val appContext: Context):
             }
         }
 
+
+
+
         fun get() =
             instance ?: throw java.lang.RuntimeException("LocationRepository is not initialized")
 
-
     }
+
 
 
     var weatherCurrentPointStateLiveData: MutableLiveData<CurrentPointState> = MutableLiveData()
@@ -51,8 +63,6 @@ class LocationRepository private constructor(private val appContext: Context):
         )
 
 
-    private val TAG = LocationRepository::class.java.simpleName
-
     // CurrentLocation
     private var mLocation: Location? = null
 
@@ -65,6 +75,83 @@ class LocationRepository private constructor(private val appContext: Context):
     // Tracks the bound state of the service.
     private var mBound = false
 
+    //Method 2 receive location
+
+    var m1Location: MutableLiveData<Location?> = MutableLiveData()
+
+    var mAddress : MutableLiveData< String?> = MutableLiveData()
+
+
+    private val locationListener = object : LocationListener{
+        override fun onLocationChanged(location: Location) {
+            getAddress(location)
+        }
+
+        override fun onProviderDisabled(provider: String) {
+            super.onProviderDisabled(provider)
+        }
+
+        override fun onProviderEnabled(provider: String) {
+            super.onProviderEnabled(provider)
+        }
+
+    }
+
+
+
+    @Suppress("DEPRECATION")
+    private fun getAddress(location: Location) {
+        Log.i(TAG, "getAddress: location: $location")
+        val handler = Handler()
+        Thread {
+            val geocoder = Geocoder(appContext)
+
+            val listAddress = geocoder.getFromLocation(location.latitude,
+                location.longitude, 1)
+            handler.post{
+                listAddress?.get(0)?.let {
+                    setCoordinates(it.getAddressLine(0), location)
+                }
+            }
+
+
+        }.start()
+    }
+
+    private fun setCoordinates(address: String?, location: Location) {
+        m1Location.value = location
+        mAddress.value = address
+
+    }
+
+    @Suppress("DEPRECATION")
+    fun getLocation(){
+            if (ContextCompat.checkSelfPermission(
+                    appContext,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE)
+                        as LocationManager
+                if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                    val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
+                    providerGPS?.let {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                            REFRESH_PERIOD,
+                            MIN_DISTANCE,
+                            locationListener)
+                    }
+                } else{
+                    val lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    lastKnownLocation?.let{
+                        getAddress(it)
+                    }
+                }
+        }
+    }
+
+    // End of Method 2
 
     // Monitors the state of the connection to the service.
     private val mServiceConnection = object : ServiceConnection {
@@ -107,6 +194,7 @@ class LocationRepository private constructor(private val appContext: Context):
     /**
      * Receiver for broadcasts sent by {@link LocationUpdatesService}.
      */
+    @Suppress("DEPRECATION")
     private inner class MyReceiver : BroadcastReceiver() {
 
         @SuppressLint("SuspiciousIndentation")
@@ -137,6 +225,7 @@ class LocationRepository private constructor(private val appContext: Context):
     }
 
     private val callbackCityName = object : Callback<CoordinatesDTO> {
+
         override fun onResponse(call: Call<CoordinatesDTO>, response: Response<CoordinatesDTO>) {
             val geoKodResponse = response.body()
             Log.i(TAG, "onResponse: callbackCityName")
@@ -189,11 +278,6 @@ class LocationRepository private constructor(private val appContext: Context):
             throw t
         }
     }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        TODO("Not yet implemented")
-    }
-
 
 }
 

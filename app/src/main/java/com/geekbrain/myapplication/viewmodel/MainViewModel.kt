@@ -1,6 +1,7 @@
 package com.geekbrain.myapplication.viewmodel
 
 import android.content.SharedPreferences
+import android.location.Location
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -15,6 +16,7 @@ class MainViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     private val locationRepository: LocationRepository = LocationRepository.get(),
 ) : ViewModel(), SharedPreferences.OnSharedPreferenceChangeListener {
+
 
     private val TAG = "MainViewModel"
 
@@ -35,6 +37,15 @@ class MainViewModel(
 
     fun getCurrentPointWeather() = liveDataCurrentPointWeather
 
+
+
+    private val currentAddressLocation: MutableLiveData<String?> =
+        locationRepository.mAddress
+
+    private val currentLocation : MutableLiveData<Location?> =
+        locationRepository.m1Location
+
+    fun getCurrentAddressLocation() = currentAddressLocation
 
     init {
         //Log.i(TAG, "Count: ${localRepository.citiesCount()}")
@@ -64,6 +75,10 @@ class MainViewModel(
                 Log.i(TAG, "refreshDataFromRepositoryFailed: " + e.message)
                 weatherLiveData.postValue(Error(e))
             }
+    }
+
+    fun getCurrentLocation() {
+        locationRepository.getLocation()
     }
 
 

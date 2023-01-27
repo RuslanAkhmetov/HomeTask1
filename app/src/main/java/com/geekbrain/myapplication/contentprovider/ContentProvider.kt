@@ -159,14 +159,7 @@ class ContentProvider : Fragment() {
                 .setTitle(getString(R.string.read_contacts))
                 .setMessage(getString(R.string.explanation))
                 .setPositiveButton(getString(R.string.access_granted)) { _, _ ->
-                    requestPermissions(
-                        arrayOf(
-                            Manifest.permission.READ_CONTACTS,
-                            Manifest.permission.READ_PHONE_NUMBERS,
-                            Manifest.permission.READ_PHONE_STATE,
-                            Manifest.permission.CALL_PHONE,
-                        ), REQUEST_CODE
-                    )
+                    myRequestPermission()
                 }
                 .setNegativeButton(getString(R.string.access_denied)) { dialog, _ ->
                     dialog.dismiss()
@@ -174,15 +167,21 @@ class ContentProvider : Fragment() {
                 .create()
                 .show()
         } else {
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_CONTACTS,
-                    Manifest.permission.READ_PHONE_NUMBERS,
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.CALL_PHONE,
-                ), REQUEST_CODE
-            )
+            myRequestPermission()
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Suppress("DEPRECATION")
+    private fun myRequestPermission() {
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_PHONE_NUMBERS,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.CALL_PHONE,
+            ), REQUEST_CODE
+        )
     }
 
     @Deprecated("Deprecated in Java")
