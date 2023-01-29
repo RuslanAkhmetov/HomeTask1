@@ -37,4 +37,7 @@
     <string name="access_granted">Access granted</string>
     <string name="access_denied">Access denied</string>
     <string name="close">Close</string>
+    <string name="show_me_map">Show me map</string>
+    <string name="day_before">day_before</string>
+    <string name="day_after">day_after</string>
 </resources>

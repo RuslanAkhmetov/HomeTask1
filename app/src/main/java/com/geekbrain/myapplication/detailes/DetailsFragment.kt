@@ -2,6 +2,7 @@ package com.geekbrain.myapplication.detailes
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,10 @@ import com.geekbrain.myapplication.databinding.FragmentDetailsBinding
 import com.geekbrain.myapplication.model.RequestLog
 import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.viewmodel.LogViewModel
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
 import java.util.*
 
 
@@ -48,32 +53,65 @@ class DetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDetailsBinding.inflate(inflater, container, false)
+        try {
+            MapKitFactory.initialize(activity)
+        } catch (e: Exception){
+            Log.i(TAG, "onCreateView: Error ")
+            e.printStackTrace()
+        }
         return binding.root
     }
 
+    @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val weatherNullable: Weather? = arguments?.getParcelable(BUNDLE_EXTRA)
-        weatherNullable?.let { weather = it  }
+        weatherNullable?.let { weather = it }
 
-        if (weather.city.city != null && weather.weatherDTO?.fact?.temp !=null
+        if (weather.city.city != null && weather.weatherDTO?.fact?.temp != null
             && weather.weatherDTO?.fact?.condition != null
         ) {
             val request = RequestLog(
                 city = weather.city.city!!,
                 timestamp = Date().time,
                 temperature = weather.weatherDTO!!.fact?.temp?.toFloat()!!,
-                condition = weather.weatherDTO!!.fact?.condition!!)
+                condition = weather.weatherDTO!!.fact?.condition!!
+            )
             logViewModel.saveRequestToDB(request)
         }
 
         binding.mainView.visibility = View.GONE
-        binding.loadingLayout.visibility = View.VISIBLE
+        //binding.loadingLayout.visibility = View.VISIBLE
         binding.HourlyForeCastRecyclerView.adapter = detailsFragmentAdapter
+        if (weather.city.lat != null && weather.city.lon != null) {
+            Log.i(TAG, "onViewCreated: mapview")
+            binding.mapview.map.move(
+                CameraPosition(
+                    Point(
+                        weather.city.lat!!.toDouble(),
+                        weather.city.lon!!.toDouble()
+                    ), 11.0f, 0.0f, 0.0f
+                ),
+                Animation(Animation.Type.SMOOTH, 0.0f),
+                null
+            )
+        }
         displayWeather(weather)
 
+    }
+
+    override fun onStart() {
+        binding.mapview.onStart()
+        MapKitFactory.getInstance().onStart()
+        super.onStart()
+    }
+
+    override fun onStop() {
+        binding.mapview.onStop()
+        MapKitFactory.getInstance().onStop()
+        super.onStop()
     }
 
     override fun onDestroyView() {
@@ -84,7 +122,7 @@ class DetailsFragment : Fragment() {
     private fun displayWeather(weather: Weather) {
         with(binding) {
             mainView.visibility = View.VISIBLE
-            loadingLayout.visibility = View.GONE
+            //loadingLayout.visibility = View.GONE
 
             cityName.text = weather.city.city
             cityCoordinates.text = String.format(

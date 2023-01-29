@@ -164,10 +164,7 @@ class MainFragment : Fragment() {
                 View.VISIBLE
             }
 
-
         setDataSet()
-
-
 
         binding.currentPoint.mainFragmentRecyclerItemTextView.setOnClickListener {
             if (viewModel.getCurrentPointWeather().value is CurrentPointState.Success) {
@@ -378,12 +375,10 @@ class MainFragment : Fragment() {
             .setTitle("Ваш адресс")
             .setMessage(address)
             .setPositiveButton("Узнать погоду"){_,_ ->
-
             }
             .setNegativeButton("Не надо"){dialog, _ -> dialog.dismiss()}
             .create()
             .show()
-
     }
 
     private fun View.showSnackBar(

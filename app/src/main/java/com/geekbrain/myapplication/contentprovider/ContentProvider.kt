@@ -200,8 +200,11 @@ class ContentProvider : Fragment() {
                 ) {
                     getContacts()
                 } else {
-                    Log.i(TAG, "onRequestPermissionsResult: PackageManager.PERMISSION_GRANTED = ${PackageManager.PERMISSION_GRANTED}")
-                    Log.i(TAG, "onRequestPermissionsResult: grantResults = ${grantResults[0]} ${grantResults[1]} ${grantResults[2]} ${grantResults[3]}")
+                    Log.i(TAG, "onRequestPermissionsResult: PackageManager.PERMISSION_GRANTED =" +
+                            "${PackageManager.PERMISSION_GRANTED}")
+                    Log.i(TAG, "onRequestPermissionsResult: grantResults = \n" +
+                            "${grantResults[0]}\n" +
+                            " ${grantResults[1]}\n ${grantResults[2]}\n ${grantResults[3]}")
                     AlertDialog.Builder(context)
                         .setTitle(getString(R.string.read_contacts))
                         .setMessage(getString(R.string.explanation))

@@ -30,8 +30,11 @@ android {
             properties.load(project.rootProject.file("ApiKey.properties").newDataInputStream())
             def apiKey = properties.getProperty("yandex_weather_api_key", "")
             def geokodApiKey = properties.getProperty("yandex_geokod_api_key", "")
+            def mapApiKey = properties.getProperty("yandex_mapkit_api_key")
             it.buildConfigField "String", "WEATHER_API_KEY", apiKey
             it.buildConfigField "String", "GEOKOD_API_KEY", geokodApiKey
+            it.buildConfigField "String", "MAPKIT_API_KEY", mapApiKey
+
         }
 
     }
@@ -72,6 +75,9 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'androidx.room:room-runtime:2.5.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
+    // Облегченная библиотека, содержит только карту, слой пробок,
+    // LocationManager, UserLocationLayer и возможность скачивать офлайн-карты (только в платной версии).
+    implementation 'com.yandex.android:maps.mobile:4.2.2-lite'
 
     kapt 'androidx.room:room-compiler:2.5.0'
 

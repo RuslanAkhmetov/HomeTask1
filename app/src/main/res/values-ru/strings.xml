@@ -23,4 +23,7 @@
     <string name="read_contacts">Доступ к контактам</string>
     <string name="access_granted">Доступ разрешен</string>
     <string name="access_denied">Доступ запрещен</string>
+    <string name="show_me_map">Показать на карте</string>
+    <string name="day_before">day_before</string>
+    <string name="day_after">day_after</string>
 </resources>

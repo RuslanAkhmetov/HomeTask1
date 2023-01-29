@@ -8,11 +8,13 @@ import com.geekbrain.myapplication.repository.LocationRepository
 import com.geekbrain.myapplication.repository.WeatherRepositoryImpl
 import com.geekbrain.myapplication.room.CityDao
 import com.geekbrain.myapplication.room.CityDataBase
+import com.yandex.mapkit.MapKitFactory
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 
 class WeatherApplication : Application() {
 
+    @Suppress("DEPRECATION")
     override fun onCreate() {
         super.onCreate()
         appInstance = this
@@ -20,6 +22,7 @@ class WeatherApplication : Application() {
         LocationRepository.initialize(this)
         sharedPreferences = PreferenceManager
             .getDefaultSharedPreferences(applicationContext)
+        MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
 
     }
 
