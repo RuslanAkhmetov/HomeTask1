@@ -140,7 +140,7 @@ class LocationRepository private constructor(private val appContext: Context) { 
         ) {
             val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE)
                     as LocationManager
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+           /* if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
                 providerGPS?.let {
                     locationManager.requestLocationUpdates(
@@ -150,13 +150,13 @@ class LocationRepository private constructor(private val appContext: Context) { 
                         locationListener
                     )
                 }
-            } else {
+            } else {*/
                 val lastKnownLocation =
                     locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 lastKnownLocation?.let {
                     getAddress(it)
                 }
-            }
+            /*}*/
         }
     }
 
