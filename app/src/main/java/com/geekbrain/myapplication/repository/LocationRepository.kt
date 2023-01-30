@@ -29,7 +29,7 @@ import retrofit2.Response
 class LocationRepository private constructor(private val appContext: Context) { //ApplicationContext
     private val TAG = LocationRepository::class.java.simpleName
     private val MIN_DISTANCE = 100f
-    private val REFRESH_PERIOD = 600000L
+    private val REFRESH_PERIOD = 100000L
 
     companion object {
         private var instance: LocationRepository? = null
@@ -84,6 +84,10 @@ class LocationRepository private constructor(private val appContext: Context) { 
             getAddress(location)
         }
 
+        override fun onFlushComplete(requestCode: Int) {
+            super.onFlushComplete(requestCode)
+        }
+
         override fun onProviderDisabled(provider: String) {
             super.onProviderDisabled(provider)
         }
@@ -125,6 +129,7 @@ class LocationRepository private constructor(private val appContext: Context) { 
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     @Suppress("DEPRECATION")
     fun getLocation() {
         if (ContextCompat.checkSelfPermission(

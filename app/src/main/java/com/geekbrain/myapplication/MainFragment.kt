@@ -185,8 +185,8 @@ class MainFragment : Fragment() {
         binding.mainFragmentRecyclerView.adapter = adapter
 
         binding.myLocationButton.setOnClickListener{
+            Log.i(TAG, "onViewCreated: Clicked")
                 viewModel.getCurrentLocation()
-
         }
 
         binding.mainFragmentFAB.setOnClickListener {

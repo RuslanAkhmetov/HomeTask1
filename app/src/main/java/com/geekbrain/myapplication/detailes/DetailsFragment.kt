@@ -18,6 +18,7 @@ import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraPosition
+import com.yandex.runtime.image.ImageProvider
 import java.util.*
 
 
@@ -87,16 +88,18 @@ class DetailsFragment : Fragment() {
         binding.HourlyForeCastRecyclerView.adapter = detailsFragmentAdapter
         if (weather.city.lat != null && weather.city.lon != null) {
             Log.i(TAG, "onViewCreated: mapview")
+            val point = Point(weather.city.lat!!.toDouble(),
+                weather.city.lon!!.toDouble())
             binding.mapview.map.move(
                 CameraPosition(
-                    Point(
-                        weather.city.lat!!.toDouble(),
-                        weather.city.lon!!.toDouble()
-                    ), 11.0f, 0.0f, 0.0f
+                    point, 10.0f, 0.0f, 0.0f
                 ),
                 Animation(Animation.Type.SMOOTH, 0.0f),
                 null
             )
+            binding.mapview.map.mapObjects.addPlacemark(point,
+                ImageProvider.fromResource(activity, R.drawable.ic_map_marker))
+
         }
         displayWeather(weather)
 
