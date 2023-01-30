@@ -1,17 +1,17 @@
 package com.geekbrain.myapplication.viewmodel
 
 import android.content.SharedPreferences
-import android.location.Location
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
 import com.geekbrain.myapplication.WeatherApplication
 import com.geekbrain.myapplication.WeatherApplication.Companion.MY_LOCATION_PERMISSION
+import com.geekbrain.myapplication.model.Weather
 import com.geekbrain.myapplication.repository.*
 import com.geekbrain.myapplication.viewmodel.AppState.*
 
-@RequiresApi(Build.VERSION_CODES.N)
+@RequiresApi(Build.VERSION_CODES.S)
 class MainViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     private val locationRepository: LocationRepository = LocationRepository.get(),
@@ -22,15 +22,21 @@ class MainViewModel(
 
     private var locationPermission: MutableLiveData<Boolean> = MutableLiveData()
 
-    private var weatherLiveData: MutableLiveData<AppState> = MutableLiveData()
+    private var weatherLiveData: MutableLiveData<AppState>  =
+        Transformations.switchMap(weatherRepository.listWeatherLiveDataFromRepo)
+        {MutableLiveData<AppState>(Success(weatherRepository
+            .listWeatherLiveDataFromRepo.value as MutableList<Weather>))} as MutableLiveData<AppState>
 
-    private var liveDataCurrentPointWeather =
+
+
+
+    private var liveDataCurrentPointWeather  =
         Transformations.switchMap(locationRepository.weatherCurrentPointStateLiveData)
                  { MutableLiveData<CurrentPointState>(locationRepository.weatherCurrentPointState)}
 
 
 
-    fun getWeatherListLiveData(): MutableLiveData <AppState> {
+   fun getWeatherListLiveData(): MutableLiveData <AppState> {
         weatherLiveData.postValue(Success(weatherRepository.getWeatherFromRepository()))
         return weatherLiveData
     }
@@ -39,30 +45,17 @@ class MainViewModel(
 
 
 
-    private val currentAddressLocation: MutableLiveData<String?> =
-        locationRepository.mAddress
-
-    private val currentLocation : MutableLiveData<Location?> =
-        locationRepository.m1Location
-
-    fun getCurrentAddressLocation() = currentAddressLocation
-
     init {
         //Log.i(TAG, "Count: ${localRepository.citiesCount()}")
         locationPermission.value = WeatherApplication.sharedPreferences
             .getBoolean(MY_LOCATION_PERMISSION, false)
         startMainViewModel()
-        startLocationService()
+        getCurrentLocation()
     }
 
     fun startMainViewModel(){
             refreshDataFromRepository()
             weatherLiveData.postValue(Success(weatherRepository.getWeatherFromRepository()))
-    }
-
-    fun startLocationService(){
-        if (locationPermission.value == true)
-            locationRepository.startLocationService()
     }
 
 
@@ -77,6 +70,7 @@ class MainViewModel(
             }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun getCurrentLocation() {
         locationRepository.getLocation()
     }
@@ -87,7 +81,7 @@ class MainViewModel(
         Log.i(TAG, "onSharedPreferenceChanged: key = $key")
         if (key == MY_LOCATION_PERMISSION
             && sharedPreferences?.getBoolean(MY_LOCATION_PERMISSION, false) == true) {
-            locationRepository.startLocationService()
+            locationRepository.getLocation()
         }
 
     }

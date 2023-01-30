@@ -130,7 +130,7 @@ class MainFragment : Fragment() {
 
     })
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -142,19 +142,12 @@ class MainFragment : Fragment() {
             renderData(it)
         }
 
-        val currentPointWeatherObserver2 = Observer<String?> {
-            showAddressDialog(it)
-        }
-
 
         viewModel.getCurrentPointWeather()
             .observe(viewLifecycleOwner, currentPointWeatherObserver)
 
         viewModel.getWeatherListLiveData()
             .observe(viewLifecycleOwner, listWeatherObserver)
-
-        viewModel.getCurrentAddressLocation()
-            .observe(viewLifecycleOwner, currentPointWeatherObserver2)
 
 
         binding.currentPoint.mainFragmentRecyclerItemTextView.visibility =
@@ -183,11 +176,6 @@ class MainFragment : Fragment() {
         }
 
         binding.mainFragmentRecyclerView.adapter = adapter
-
-        binding.myLocationButton.setOnClickListener{
-            Log.i(TAG, "onViewCreated: Clicked")
-                viewModel.getCurrentLocation()
-        }
 
         binding.mainFragmentFAB.setOnClickListener {
             changeWeatherDataSet()
@@ -238,14 +226,17 @@ class MainFragment : Fragment() {
                 binding.mainFragmentFAB.showSnackBar(
                     "Error" + currentPointState.error,
                     "Reload",
-                    { viewModel.startMainViewModel() }
+                    { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        viewModel.startMainViewModel()
+                    }
+                    }
                 )
             }
         }
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun renderData(appState: AppState) {
         when (appState) {
             is AppState.Success -> {
@@ -273,7 +264,7 @@ class MainFragment : Fragment() {
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun changeWeatherDataSet() {
         if (isDataSetRus) {
             binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)

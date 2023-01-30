@@ -1,7 +1,6 @@
 package com.geekbrain.myapplication.repository
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -10,15 +9,12 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Handler
-import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.model.Weather
-import com.geekbrain.myapplication.model.geoKod.CoordinatesDTO
 import com.geekbrain.myapplication.model.weatherDTO.WeatherDTO
 import com.geekbrain.myapplication.utils.Utils
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
@@ -63,18 +59,14 @@ class LocationRepository private constructor(private val appContext: Context) { 
     // CurrentLocation
     private var mLocation: Location? = null
 
-    // The BroadcastReceiver used to listen from broadcasts from the service.
-    private var myReceiver = MyReceiver()
 
     // A reference to the service used to get location updates.
-    private var mService: LocationUpdatesService? = null
+   // private var mService: LocationUpdatesService? = null
 
     // Tracks the bound state of the service.
-    private var mBound = false
+    //private var mBound = false
 
     //Method 2 receive location
-
-    var m1Location: MutableLiveData<Location?> = MutableLiveData()
 
     var mAddress: MutableLiveData<String?> = MutableLiveData()
 
@@ -98,6 +90,36 @@ class LocationRepository private constructor(private val appContext: Context) { 
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
+    @Suppress("DEPRECATION")
+    fun getLocation() {
+        if (ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE)
+                    as LocationManager
+            /* if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                 val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
+                 providerGPS?.let {
+                     locationManager.requestLocationUpdates(
+                         LocationManager.GPS_PROVIDER,
+                         REFRESH_PERIOD,
+                         MIN_DISTANCE,
+                         locationListener
+                     )
+                 }
+             } else {*/
+            val lastKnownLocation =
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            lastKnownLocation?.let {
+                getAddress(it)
+            }
+            /*}*/
+        }
+    }
 
     @Suppress("DEPRECATION")
     private fun getAddress(location: Location) {
@@ -110,10 +132,10 @@ class LocationRepository private constructor(private val appContext: Context) { 
                     location.latitude,
                     location.longitude, 1
                 )
-
                 handler.post {
                     listAddress?.get(0)?.let {
-                        setCoordinates(it.getAddressLine(0), location)
+                        Log.i(TAG, "getAddress: ${it.getAddressLine(0)}")
+                        requestWeatherDTOForCurrentLocation(it.getAddressLine(0), location)
                     }
                 }
             } catch (e: Exception) {
@@ -123,159 +145,40 @@ class LocationRepository private constructor(private val appContext: Context) { 
         }.start()
     }
 
-    private fun setCoordinates(address: String?, location: Location) {
-        m1Location.value = location
-        mAddress.value = address
-
-    }
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    @Suppress("DEPRECATION")
-    fun getLocation() {
-        if (ContextCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE)
-                    as LocationManager
-           /* if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
-                providerGPS?.let {
-                    locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER,
-                        REFRESH_PERIOD,
-                        MIN_DISTANCE,
-                        locationListener
-                    )
-                }
-            } else {*/
-                val lastKnownLocation =
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                lastKnownLocation?.let {
-                    getAddress(it)
-                }
-            /*}*/
-        }
-    }
-
-    // End of Method 2
-
-    // Monitors the state of the connection to the service.
-    private val mServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as LocationUpdatesService.LocalBinder
-            mService = binder.getService()
-            mBound = true
-            Log.i(TAG, "onServiceConnected: ")
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            mService = null
-            mBound = false
-        }
-    }
-
-
-    fun startLocationService() {
-        // Bind to the service. If the service is in foreground mode, this signals to the service
-        // that since this activity is in the foreground, the service can exit foreground mode.
-        appContext.bindService(
-            Intent(appContext, LocationUpdatesService::class.java),
-            mServiceConnection,
-            Context.BIND_AUTO_CREATE
-        )
-
-        mService?.requestLocationUpdates(appContext)
-
-        Log.i(TAG, "startLocationService: ")
-
-        LocalBroadcastManager.getInstance(appContext)
-            .registerReceiver(
-                myReceiver, IntentFilter(
-                    ACTION_BROADCAST
-                )
-            )
-    }
-
-
-    /**
-     * Receiver for broadcasts sent by {@link LocationUpdatesService}.
-     */
-    @Suppress("DEPRECATION")
-    private inner class MyReceiver : BroadcastReceiver() {
-
-        @SuppressLint("SuspiciousIndentation")
-        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-        override fun onReceive(context: Context?, intent: Intent?) {
-            mLocation = intent?.getParcelableExtra(
-                EXTRA_LOCATION,
-            )
-            Log.i(TAG, "onReceive: $mLocation")
-            val locationLat = mLocation?.latitude?.toFloat()
-            val locationLon = mLocation?.longitude?.toFloat()
-            locationLat?.let { lat ->
-                locationLon?.let { lon ->
+    private fun requestWeatherDTOForCurrentLocation(address: String, location: Location) {
+        mLocation?.latitude = location.latitude
+        mLocation?.longitude = location.longitude
+       // mAddress.value = address
+        Log.i(TAG, "setCoordinates: lat: ${location.latitude}")
+        address?.let { addr ->
+            location.latitude?.let { latitude ->
+                location.longitude?.let { longitude ->
+                    Log.i(TAG, "setCoordinates: address: $latitude $longitude")
                     weatherCurrentPointState = CurrentPointState.Success(
                         Weather(
-                            City("Current Point", true, lat, lon),
+                            City(addr, true, latitude.toFloat(), longitude.toFloat()),
                             null
                         )
                     )
-
-                    remoteDataSource.getCityName(
-                        lat, lon, callbackCityName
+                    Log.i(TAG, "setCoordinates: lat = $latitude")
+                    remoteDataSource.getWeather(
+                        latitude.toFloat(),
+                        longitude.toFloat(), callbackWeatherDTO
                     )
                 }
             }
-
         }
     }
 
-    private val callbackCityName = object : Callback<CoordinatesDTO> {
 
-        override fun onResponse(call: Call<CoordinatesDTO>, response: Response<CoordinatesDTO>) {
-            val geoKodResponse = response.body()
-            Log.i(TAG, "onResponse: callbackCityName")
-            if (Utils.checkResponseCoordinatesDTO(geoKodResponse)) {
-                with(
-                    response.body()?.response?.GeoObjectCollection?.featureMember?.get(0)?.GeoObject
-                ) {
-                    val cityNameResponded = this?.name + ", " + this?.description
-                    val isRusResponded = cityNameResponded.contains("Россия")
-                    weatherCurrentPointState
-                        .weatherInCurrentPoint.let {
-                            it.city.city = cityNameResponded
-                            it.city.isRus = isRusResponded
 
-                            it.city.lon?.let { lon ->
-                                it.city.lat?.let { lat ->
-                                    remoteDataSource.getWeather(
-                                        lat = lat, lon = lon,
-                                        callbackWeatherDTO
-                                    )
-                                }
-                            }
-                        }
-                }
-            } else {
-                throw RuntimeException("Cordinates are wrong")
-            }
 
-        }
-
-        override fun onFailure(call: Call<CoordinatesDTO>, t: Throwable) {
-            Log.i(TAG, "CoordinatesLoaderFailed: " + t.message)
-            throw t
-        }
-
-    }
 
     val callbackWeatherDTO = object : Callback<WeatherDTO> {
         override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
             response.body()?.let {
                 if (Utils.checkResponseWeatherDTO(it)) {
+                    Log.i(TAG, "onResponse: callbackWeatherDTO")
                     weatherCurrentPointState
                         .weatherInCurrentPoint.weatherDTO = it
                     weatherCurrentPointStateLiveData.value = weatherCurrentPointState

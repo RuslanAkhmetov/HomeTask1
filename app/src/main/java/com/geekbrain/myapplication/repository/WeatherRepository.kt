@@ -9,6 +9,7 @@ interface WeatherRepository {
     fun getWeatherListFromServer(listWeather:List<Weather>)
     fun getWeatherFromRepository(): MutableList<Weather>
     fun getWeatherFromLocalStorage()
+    var listWeatherLiveDataFromRepo :MutableLiveData<MutableList<Weather>>
 
     @RequiresApi(value = 24)
     fun refreshWeatherList()
