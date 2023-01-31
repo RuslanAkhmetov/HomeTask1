@@ -19,6 +19,16 @@ class MainActivity : AppCompatActivity() {
         
         binding = ActivityMainBinding.inflate(layoutInflater)
 
+/*      //Получение токена
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(
+            OnCompleteListener
+            {task->
+                if(!task.isSuccessful){
+                    return@OnCompleteListener
+                }
+                val token = task.result
+            }
+        )*/
 
         setContentView(binding.root)
         if (savedInstanceState == null) {
