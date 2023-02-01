@@ -16,6 +16,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     companion object{
         private const val PUSH_KEY_TITLE = "title"
         private const val PUSH_KEY_MESSAGE = "message"
+        private const val PUSH_KEY_INFO = "info"
         private const val CHANNEL_ID = "channel_id"
         private const val NOTIFICATION_ID = 37
     }
@@ -43,18 +44,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val title = data[PUSH_KEY_TITLE]
         val message = data[PUSH_KEY_MESSAGE]
+        val info = data[PUSH_KEY_INFO]
         if(!title.isNullOrBlank() && !message.isNullOrBlank()) {
-            showNotification(title, message)
+            if (info != null) {
+                showNotification(title, message, info)
+            }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showNotification(title: String, message: String){
+    private fun showNotification(title: String, message: String, info: String){
         Log.v(TAG, "showNotification: ")
         val notificationBuilder = NotificationCompat.Builder(applicationContext, CHANNEL_ID).apply {
             setSmallIcon(R.drawable.ic_baseline_emergency_24)
             setContentTitle(title)
             setContentText(message)
+            setContentInfo(info)
+
+            color = getColor(R.color.notification)
             priority = NotificationCompat.PRIORITY_DEFAULT
         }
 
