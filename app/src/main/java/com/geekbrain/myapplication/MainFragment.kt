@@ -50,6 +50,20 @@ class MainFragment : Fragment() {
 
         @JvmStatic
         fun newInstance(): MainFragment = MainFragment()
+
+        class ConnectivityActionReceiver : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val noConnection =
+                    intent?.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)
+                if (noConnection == true) {
+                    Toast.makeText(context, "Connection Lost", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Connection Found", Toast.LENGTH_LONG).show()
+                }
+
+            }
+
+        }
     }
 
     private val viewModel by viewModels<MainViewModel>()
@@ -346,19 +360,8 @@ class MainFragment : Fragment() {
         }
     }
 
-    inner class ConnectivityActionReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val noConnection =
-                intent?.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)
-            if (noConnection == true) {
-                Toast.makeText(context, "Connection Lost", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Connection Found", Toast.LENGTH_LONG).show()
-            }
 
-        }
 
-    }
 
 
     private fun View.showSnackBar(

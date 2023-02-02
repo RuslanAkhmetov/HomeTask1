@@ -48,13 +48,13 @@
         </activity>
 
 
-        <receiver
+        <!--<receiver
             android:name=".MainFragment$ConnectivityActionReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="CONNECTIVITY_ACTION" />
             </intent-filter>
-        </receiver>
+        </receiver>-->
 
     </application>
 

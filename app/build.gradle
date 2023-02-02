@@ -7,6 +7,15 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file("keystoregen1")
+            storePassword 'gnuhj1'
+            keyAlias 'key01'
+            keyPassword 'gnuhj1'
+        }
+    }
+
     namespace 'com.geekbrain.myapplication'
     compileSdk 33
 
@@ -19,29 +28,19 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildFeatures{
-        viewBinding  true
-    }
-
-
-
     buildTypes {
 
         release {
-
+            signingConfig signingConfigs.release
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+           proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') , 'proguard-rules.pro'
+            versionNameSuffix '-release'
         }
 
 
         debug {
             versionNameSuffix '-debug'
         }
-
-         beta {
-             initWith debug
-             versionNameSuffix '-beta'
-         }
 
         buildTypes.each {
             Properties properties = new Properties()
@@ -53,13 +52,8 @@ android {
             it.buildConfigField "String", "GEOKOD_API_KEY", geokodApiKey
             it.buildConfigField "String", "MAPKIT_API_KEY", mapApiKey
         }
-        alfa {
-            versionNameSuffix '-alfa'
-        }
 
     }
-
-
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -67,6 +61,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    buildFeatures{
+        viewBinding  true
+    }
+
+    lint {
+        baseline = file("lint-baseline.xml")
     }
 }
 
@@ -99,7 +101,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx:23.1.1'
 
     kapt 'androidx.room:room-compiler:2.5.0'
-
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

@@ -10,7 +10,7 @@ plugins {
 }
 
 repositories{
-
+    google()
     mavenCentral()
     maven{
         url "http://maven.google.com/"
