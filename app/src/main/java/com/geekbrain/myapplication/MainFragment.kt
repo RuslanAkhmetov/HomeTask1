@@ -1,7 +1,6 @@
 package com.geekbrain.myapplication
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -42,7 +41,7 @@ class MainFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val TAG = "MainFragment"
+    private val TAG = "mainFragment"
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
@@ -117,7 +116,7 @@ class MainFragment : Fragment() {
     }
 
     private val adapter = MainFragmentAdapter(object : MainFragmentAdapter.OnItemViewClickListener {
-        override fun OnItemClick(weather: Weather) {
+        override fun onItemClick(weather: Weather) {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
                     .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
@@ -361,16 +360,6 @@ class MainFragment : Fragment() {
 
     }
 
-    private fun showAddressDialog(address: String){
-        AlertDialog.Builder(activity)
-            .setTitle("Ваш адресс")
-            .setMessage(address)
-            .setPositiveButton("Узнать погоду"){_,_ ->
-            }
-            .setNegativeButton("Не надо"){dialog, _ -> dialog.dismiss()}
-            .create()
-            .show()
-    }
 
     private fun View.showSnackBar(
         text: String,

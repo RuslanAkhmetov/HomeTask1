@@ -42,16 +42,5 @@ data class City(
         }
     }
 
-    fun getWorldCities() = listOf(
-        City("London", false, 51.5085300F, -0.1257400F),
-        City("Tokio", false,35.6895000F, 139.6917100F),
-        City("Paris", false,48.853410F, 2.3488000F),
-    )
 
-
-    fun getRussianCities()= listOf(
-        City("Moscow", true,55.755825F, 37.6173f),
-        City("Saint-Petersburg", true,59.93750F, 30.30861F),
-        City("Novosibirsk", true,55.008354F, 82.93573F),
-    )
 }

@@ -47,10 +47,6 @@
                 android:value="" />
         </activity>
 
-        <service
-            android:name=".repository.LocationUpdatesService"
-            android:enabled="true"
-            android:exported="false" />
 
         <receiver
             android:name=".MainFragment$ConnectivityActionReceiver"

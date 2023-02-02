@@ -61,7 +61,7 @@ class LocationRepository private constructor(private val appContext: Context) { 
 
 
     // A reference to the service used to get location updates.
-   // private var mService: LocationUpdatesService? = null
+    // private var mService: LocationUpdatesService? = null
 
     // Tracks the bound state of the service.
     //private var mBound = false
@@ -69,22 +69,9 @@ class LocationRepository private constructor(private val appContext: Context) { 
     //Method 2 receive location
 
 
-
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             getAddress(location)
-        }
-
-        override fun onFlushComplete(requestCode: Int) {
-            super.onFlushComplete(requestCode)
-        }
-
-        override fun onProviderDisabled(provider: String) {
-            super.onProviderDisabled(provider)
-        }
-
-        override fun onProviderEnabled(provider: String) {
-            super.onProviderEnabled(provider)
         }
 
     }
@@ -101,21 +88,21 @@ class LocationRepository private constructor(private val appContext: Context) { 
             val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE)
                     as LocationManager
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                 val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
-                 providerGPS?.let {
-                     locationManager.requestLocationUpdates(
-                         LocationManager.GPS_PROVIDER,
-                         REFRESH_PERIOD,
-                         MIN_DISTANCE,
-                         locationListener
-                     )
-                 }
-             } else {
-            val lastKnownLocation =
-                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            lastKnownLocation?.let {
-                getAddress(it)
-            }
+                val providerGPS = locationManager.getProvider(LocationManager.GPS_PROVIDER)
+                providerGPS?.let {
+                    locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        REFRESH_PERIOD,
+                        MIN_DISTANCE,
+                        locationListener
+                    )
+                }
+            } else {
+                val lastKnownLocation =
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                lastKnownLocation?.let {
+                    getAddress(it)
+                }
             }
         }
     }
@@ -147,30 +134,18 @@ class LocationRepository private constructor(private val appContext: Context) { 
     private fun requestWeatherDTOForCurrentLocation(address: String, location: Location) {
         mLocation?.latitude = location.latitude
         mLocation?.longitude = location.longitude
-       // mAddress.value = address
-        Log.i(TAG, "setCoordinates: lat: ${location.latitude}")
-        address?.let { addr ->
-            location.latitude?.let { latitude ->
-                location.longitude?.let { longitude ->
-                    Log.i(TAG, "setCoordinates: address: $latitude $longitude")
-                    weatherCurrentPointState = CurrentPointState.Success(
-                        Weather(
-                            City(addr, true, latitude.toFloat(), longitude.toFloat()),
-                            null
-                        )
-                    )
-                    Log.i(TAG, "setCoordinates: lat = $latitude")
-                    remoteDataSource.getWeather(
-                        latitude.toFloat(),
-                        longitude.toFloat(), callbackWeatherDTO
-                    )
-                }
-            }
-        }
+        // mAddress.value = address
+        weatherCurrentPointState = CurrentPointState.Success(
+            Weather(
+                City(address, true, location.latitude.toFloat(), location.longitude.toFloat()),
+                null
+            )
+        )
+        remoteDataSource.getWeather(
+            location.latitude.toFloat(),
+            location.longitude.toFloat(), callbackWeatherDTO
+        )
     }
-
-
-
 
 
     val callbackWeatherDTO = object : Callback<WeatherDTO> {

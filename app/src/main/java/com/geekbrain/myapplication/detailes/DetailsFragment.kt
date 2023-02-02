@@ -23,7 +23,7 @@ import java.util.*
 
 
 class DetailsFragment : Fragment() {
-    private val TAG = "DetailsFragment"
+    private val TAG = "detailsFragment"
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding

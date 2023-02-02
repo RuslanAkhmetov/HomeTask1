@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Домашняя работа10</string>
+    <string name="app_name">Домашняя работа12</string>
     <string name="temperature_label">Температура, С</string>
     <string name="feels_like_label">Ощущается как</string>
     <string name="city_coordinates">lt/ln: %s, %s"</string>

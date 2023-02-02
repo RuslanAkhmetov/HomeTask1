@@ -12,14 +12,14 @@ class LogViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepositoryImpl.get(),
     var requestLogLiveData: MutableLiveData<MutableList<RequestLog>> =
         Transformations.switchMap(weatherRepository.requestLogLiveData)
-        { MutableLiveData<MutableList<RequestLog>>(weatherRepository.getRequestsLog()) }
+        { MutableLiveData(weatherRepository.getRequestsLog()) }
                 as MutableLiveData<MutableList<RequestLog>>,
 
     //: MutableLiveData<MutableList<RequestLog>> = MutableLiveData(),
 
 ) : ViewModel() {
 
-    private val TAG = "LogViewModel"
+    private val TAG = "logViewModel"
 
     fun getRequestsLog() {
         requestLogLiveData = weatherRepository.requestLogLiveData

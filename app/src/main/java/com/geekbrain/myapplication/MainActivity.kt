@@ -1,16 +1,16 @@
 package com.geekbrain.myapplication
 
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import com.geekbrain.myapplication.contentprovider.ContentProvider
 import com.geekbrain.myapplication.databinding.ActivityMainBinding
 import com.geekbrain.myapplication.log.LogFragment
 
 
 class MainActivity : AppCompatActivity() {
-    private val TAG = "MainActivity"
+    private val TAG = "mainActivity"
 
     private lateinit var  binding: ActivityMainBinding
 
@@ -18,17 +18,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         binding = ActivityMainBinding.inflate(layoutInflater)
-
-/*      //Получение токена
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(
-            OnCompleteListener
-            {task->
-                if(!task.isSuccessful){
-                    return@OnCompleteListener
-                }
-                val token = task.result
-            }
-        )*/
 
         setContentView(binding.root)
         if (savedInstanceState == null) {
@@ -54,16 +43,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
-            R.id.menu_content_provider -> {
-                supportFragmentManager.apply {
-                    beginTransaction()
-                        .add(R.id.container, ContentProvider.newInstance())
-                        .addToBackStack("")
-                        .commitAllowingStateLoss()
 
-                }
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }

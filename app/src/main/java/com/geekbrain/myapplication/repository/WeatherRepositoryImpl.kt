@@ -18,7 +18,7 @@ import retrofit2.Response
 class WeatherRepositoryImpl private constructor(private val appContext: Context) :
     WeatherRepository { //context Application
 
-    private val TAG = "WeatherRepository"
+    private val TAG = "weatherRepository"
 
     private val remoteDataSource = RemoteDataSource()
 

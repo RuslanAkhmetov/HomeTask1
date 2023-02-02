@@ -18,7 +18,7 @@ class MainViewModel(
 ) : ViewModel(), SharedPreferences.OnSharedPreferenceChangeListener {
 
 
-    private val TAG = "MainViewModel"
+    private val TAG = "mainViewModel"
 
     private var locationPermission: MutableLiveData<Boolean> = MutableLiveData()
 

@@ -15,7 +15,7 @@ import com.geekbrain.myapplication.viewmodel.LogViewModel
 
 class LogFragment: Fragment() {
     
-    private val TAG = "LogFragment"
+    private val TAG = "logFragment"
 
     private var _binding : FragmentRequestsLogBinding? = null
     private val binding get() = _binding!!
@@ -34,7 +34,7 @@ class LogFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentRequestsLogBinding.inflate(inflater, container, false)
         return binding.root
     }

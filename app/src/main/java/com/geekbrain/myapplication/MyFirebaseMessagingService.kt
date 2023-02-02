@@ -11,7 +11,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-    private val TAG = "MyFirebaseMessService"
+    private val TAG = "myFirebaseMessService"
 
     companion object{
         private const val PUSH_KEY_TITLE = "title"

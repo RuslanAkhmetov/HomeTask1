@@ -13,7 +13,7 @@ class MainFragmentAdapter (private var onItemViewClickListener: OnItemViewClickL
     private var weatherData: List<Weather> = listOf()
 
     interface OnItemViewClickListener {
-        fun OnItemClick(weather: Weather)
+        fun onItemClick(weather: Weather)
     }
 
     fun setWeather(data : List<Weather>){
@@ -28,7 +28,7 @@ class MainFragmentAdapter (private var onItemViewClickListener: OnItemViewClickL
                     "${weather.city.city.toString()}     ${weather.weatherDTO?.fact?.temp.toString()} C"
 
                 setOnClickListener {
-                    onItemViewClickListener?.OnItemClick(weather)
+                    onItemViewClickListener?.onItemClick(weather)
                 }
             }
         }

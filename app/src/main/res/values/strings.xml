@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidKotlinApp 10</string>
+    <string name="app_name">AndroidKotlinApp 12</string>
 
     <string name="launch_activity" translatable="false">Launch activity</string>
     <string name="location_unknown" translatable="false">Location unknown</string>

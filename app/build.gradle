@@ -16,15 +16,32 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures{
+        viewBinding  true
+    }
+
+
+
     buildTypes {
+
         release {
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+
+        debug {
+            versionNameSuffix '-debug'
+        }
+
+         beta {
+             initWith debug
+             versionNameSuffix '-beta'
+         }
 
         buildTypes.each {
             Properties properties = new Properties()
@@ -35,14 +52,14 @@ android {
             it.buildConfigField "String", "WEATHER_API_KEY", apiKey
             it.buildConfigField "String", "GEOKOD_API_KEY", geokodApiKey
             it.buildConfigField "String", "MAPKIT_API_KEY", mapApiKey
-
+        }
+        alfa {
+            versionNameSuffix '-alfa'
         }
 
     }
 
-    buildFeatures{
-        viewBinding  true
-    }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
