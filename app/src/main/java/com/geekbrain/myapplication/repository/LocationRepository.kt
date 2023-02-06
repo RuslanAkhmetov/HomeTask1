@@ -43,7 +43,13 @@ class LocationRepository private constructor(private val appContext: Context) { 
     }
 
 
+
+
     var weatherCurrentPointStateLiveData: MutableLiveData<CurrentPointState> = MutableLiveData()
+
+    var weatherNewPointStateLiveData: MutableLiveData<CurrentPointState> = MutableLiveData()
+
+
 
     private val remoteDataSource = RemoteDataSource()
 
@@ -55,6 +61,13 @@ class LocationRepository private constructor(private val appContext: Context) { 
             )
         )
 
+    var weatherNewPositionCurrentPointState = CurrentPointState
+        .Success(
+            Weather(
+                City("New Position", true, null, null),
+                null
+            )
+        )
 
     // CurrentLocation
     private var mLocation: Location? = null
@@ -73,7 +86,6 @@ class LocationRepository private constructor(private val appContext: Context) { 
         override fun onLocationChanged(location: Location) {
             getAddress(location)
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -108,6 +120,36 @@ class LocationRepository private constructor(private val appContext: Context) { 
     }
 
     @Suppress("DEPRECATION")
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun getFullCityName(shortCityName:String){
+        Log.i(TAG, "getFullCutyName: $shortCityName")
+        val handler = Handler()
+        Thread{
+            val geocoder =Geocoder(appContext)
+            try{
+                val listNewAddress = geocoder.getFromLocationName(shortCityName, 1)
+                handler.post{
+                    if(listNewAddress?.get(0) != null) {
+                        val address = listNewAddress?.get(0)
+                        val cityName = address?.getAddressLine(0)
+                        val newCityIsRus = address?.countryName?.contains("Rus") == true ||
+                                address?.countryName?.contains("Россия") == true
+                        Log.i(TAG, "getFullCityName: $address?.getAddressLine")
+                        weatherNewPositionCurrentPointState = CurrentPointState.Success(Weather(
+                            City(cityName, newCityIsRus ,
+                                address?.latitude?.toFloat() ,
+                                address?.longitude?.toFloat() ), null)
+                        )
+                        weatherNewPointStateLiveData.value = weatherNewPositionCurrentPointState
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+
+    @Suppress("DEPRECATION")
     private fun getAddress(location: Location) {
         Log.i(TAG, "getAddress: location: $location")
         val handler = Handler()
@@ -129,6 +171,37 @@ class LocationRepository private constructor(private val appContext: Context) { 
             }
 
         }.start()
+    }
+
+    fun requestWeatherDTOForNewPosition(){
+        if (weatherNewPositionCurrentPointState is CurrentPointState.Success) {
+            val city = weatherCurrentPointState.weatherInCurrentPoint.city
+
+            city?.lat?.let {latitude ->
+                city?.lon?.let { longitude ->
+                    remoteDataSource.getWeather(
+                        latitude,
+                        longitude,
+                        callbackNewPosWeatherDTO)
+                }
+            }
+        }
+    }
+
+    val callbackNewPosWeatherDTO = object : Callback<WeatherDTO>{
+        override fun onResponse(call: Call<WeatherDTO>, response: Response<WeatherDTO>) {
+            response.body()?.let{
+                if (Utils.checkResponseWeatherDTO(it)) {
+                    weatherNewPositionCurrentPointState.weatherInCurrentPoint.weatherDTO = it
+                    weatherCurrentPointStateLiveData.value = weatherCurrentPointState
+                }
+            }
+        }
+
+        override fun onFailure(call: Call<WeatherDTO>, t: Throwable) {
+            TODO("Not yet implemented")
+        }
+
     }
 
     private fun requestWeatherDTOForCurrentLocation(address: String, location: Location) {

@@ -36,12 +36,11 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
             if (cities.isNotEmpty()) {
                 Log.i(TAG, "getWeatherFromLocalStorage: from db")
                 listWeather = cities.map { Weather(it, null) } as MutableList<Weather>
-                listWeatherLiveDataFromRepo.value = listWeather
             } else {
                 Log.i(TAG, "getWeatherFromLocalStorage: initialize")
                 listWeather = initWeatherList() as MutableList<Weather>
-                listWeatherLiveDataFromRepo.value = listWeather
             }
+            listWeatherLiveDataFromRepo.value = listWeather
             getWeatherListFromServer(listWeather)
         }
 
@@ -77,7 +76,9 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
     override fun getRequestsLog(): MutableList<RequestLog> = requestLogFromDB
 
-
+    override fun saveCityToDB(city: City) {
+        localRepository.saveEntity(city)
+    }
 
     companion object {
         private var instance: WeatherRepositoryImpl? = null
@@ -94,6 +95,7 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
 
     override fun getWeatherFromRepository(): MutableList<Weather> {
+
         return listWeather
     }
 
@@ -109,7 +111,7 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun getWeatherListFromServer(listWeather: List<Weather>) {
+    private fun getWeatherListFromServer(listWeather: List<Weather>) {
         for (weatherItem in listWeather) {
             try {
                 if (weatherItem.city.lat == null || weatherItem.city.lon == null) {

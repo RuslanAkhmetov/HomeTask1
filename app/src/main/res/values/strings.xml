@@ -2,18 +2,16 @@
     <string name="app_name">AndroidKotlinApp 12</string>
 
     <string name="launch_activity" translatable="false">Launch activity</string>
-    <string name="location_unknown" translatable="false">Location unknown</string>
     <string name="location_updates_label" translatable="false">Location Updates</string>
 
-    <string name="permission_rationale" translatable="false">Location permission is needed for core functionality</string>
-    <string name="permission_denied_explanation" translatable="false">Permission was denied, but is needed for core
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core
         functionality.</string>
-    <string name="settings" translatable="false">Settings</string>
     <string name="ok" translatable="false">OK</string>
     <string name="request_location_updates" translatable="false">Request location updates</string>
     <string name="remove_location_updates" translatable="false">Remove location updates</string>
 
-    <string name="location_updated" translatable="false">Location Updated: %1$s</string>
+    <string name="location_updated">Location Updated: %1$s</string>
 
     <string name="temperature_label">Temperature, C</string>
     <string name="feels_like_label">Feels like</string>
@@ -40,4 +38,9 @@
     <string name="show_me_map">Show me map</string>
     <string name="day_before">day_before</string>
     <string name="day_after">day_after</string>
+    <string name="settings">Settings</string>
+    <string name="new_position_name">New position name</string>
+    <string name="we_found_follow_position">We found follow Position</string>
+    <string name="specify">Specify</string>
+    <string name="search">Search</string>
 </resources>

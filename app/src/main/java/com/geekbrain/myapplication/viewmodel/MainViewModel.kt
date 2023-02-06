@@ -37,6 +37,7 @@ class MainViewModel(
 
 
    fun getWeatherListLiveData(): MutableLiveData <AppState> {
+       weatherRepository.refreshWeatherList()
         weatherLiveData.postValue(Success(weatherRepository.getWeatherFromRepository()))
         return weatherLiveData
     }

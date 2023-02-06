@@ -26,4 +26,12 @@
     <string name="show_me_map">Показать на карте</string>
     <string name="day_before">Предыдущий день</string>
     <string name="day_after">Следующий день</string>
+    <string name="permission_rationale">Разрешение доступа к геолокации необходимо для функциональности приложения</string>
+    <string name="permission_denied_explanation">Разрешения не получены, но они необходимы для обеспечения функциональности.</string>
+    <string name="settings">Настройки</string>
+    <string name="location_updated">"Геопозиция обновлена: %1$s "</string>
+    <string name="new_position_name">Название</string>
+    <string name="we_found_follow_position">Мы нашли следующую Локацию</string>
+    <string name="specify">Specify</string>
+    <string name="search">Search</string>
 </resources>

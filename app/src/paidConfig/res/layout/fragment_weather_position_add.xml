@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/fragmentBackground">
+
+    <androidx.appcompat.widget.AppCompatCheckedTextView
+        android:id="@+id/newPositionLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/new_position_name"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/newPositionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/newPositionLabel"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/searchNewPositionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/search"
+        app:layout_constraintTop_toBottomOf="@id/newPositionEditText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.appcompat.widget.AppCompatCheckedTextView
+        android:id="@+id/foundLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/we_found_follow_position"
+        app:layout_constraintTop_toBottomOf="@id/searchNewPositionButton"/>
+
+    <androidx.appcompat.widget.AppCompatCheckedTextView
+        android:id="@+id/foundName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size"
+        app:layout_constraintTop_toBottomOf="@id/foundLabel"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/AddButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_new_weather"
+        app:layout_constraintTop_toBottomOf="@+id/foundName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+<!--    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/specifyNameButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/specify"
+        app:layout_constraintTop_toBottomOf="@+id/foundName"
+        app:layout_constraintStart_toEndOf="@id/AddButton"
+        app:layout_constraintEnd_toEndOf="parent"/>-->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
