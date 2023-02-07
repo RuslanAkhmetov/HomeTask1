@@ -10,7 +10,6 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.geekbrain.myapplication.databinding.FragmentWeatherPositionAddBinding
-import com.geekbrain.myapplication.model.City
 import com.geekbrain.myapplication.viewmodel.AddViewModel
 import com.geekbrain.myapplication.viewmodel.CurrentPointState
 
@@ -53,6 +52,7 @@ class AddWeatherPosition: Fragment() {
             }
 
         binding.searchNewPositionButton.setOnClickListener{
+            binding.AddButton.isEnabled = true
             val cityName = binding.newPositionEditText.text.toString()
             if(cityName.length > 3){
                 addPositionViewModel.searchCity(cityName)
@@ -61,6 +61,8 @@ class AddWeatherPosition: Fragment() {
         }
 
         binding.AddButton.setOnClickListener{
+            binding.foundName.text =""
+            binding.AddButton.isEnabled = false
             addPositionViewModel.addCityToDB()
         }
 

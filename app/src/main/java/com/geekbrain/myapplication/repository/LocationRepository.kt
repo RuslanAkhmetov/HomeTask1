@@ -129,8 +129,8 @@ class LocationRepository private constructor(private val appContext: Context) { 
             try{
                 val listNewAddress = geocoder.getFromLocationName(shortCityName, 1)
                 handler.post{
-                    if(listNewAddress?.get(0) != null) {
-                        val address = listNewAddress?.get(0)
+                    if(listNewAddress?.size != null && listNewAddress.size!! >0 &&listNewAddress.get(0) != null) {
+                        val address = listNewAddress[0]
                         val cityName = address?.getAddressLine(0)
                         val newCityIsRus = address?.countryName?.contains("Rus") == true ||
                                 address?.countryName?.contains("Россия") == true

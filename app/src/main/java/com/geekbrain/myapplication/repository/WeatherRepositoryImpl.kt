@@ -33,13 +33,14 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
     private val listener = object : LocalRepositoryImpl.DBLoadListener {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceiveCitiesFromDB(cities: List<City>) {
-            if (cities.isNotEmpty()) {
+            listWeather = if (cities.isNotEmpty()) {
                 Log.i(TAG, "getWeatherFromLocalStorage: from db")
-                listWeather = cities.map { Weather(it, null) } as MutableList<Weather>
+                cities.map { Weather(it, null) } as MutableList<Weather>
             } else {
                 Log.i(TAG, "getWeatherFromLocalStorage: initialize")
-                listWeather = initWeatherList() as MutableList<Weather>
+                initWeatherList() as MutableList<Weather>
             }
+            Log.i(TAG, "onReceiveCitiesFromDB: ${listWeather.size}")
             listWeatherLiveDataFromRepo.value = listWeather
             getWeatherListFromServer(listWeather)
         }
@@ -76,8 +77,14 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
     override fun getRequestsLog(): MutableList<RequestLog> = requestLogFromDB
 
-    override fun saveCityToDB(city: City) {
-        localRepository.saveEntity(city)
+    override fun saveCityToDB(cityForSave: City) {
+
+        for( weatherElement in listWeather){
+            if(weatherElement.city.city?.contains(cityForSave.city as CharSequence)==true){
+                return
+            }
+        }
+        localRepository.saveEntity(cityForSave)
     }
 
     companion object {
@@ -95,7 +102,6 @@ class WeatherRepositoryImpl private constructor(private val appContext: Context)
 
 
     override fun getWeatherFromRepository(): MutableList<Weather> {
-
         return listWeather
     }
 

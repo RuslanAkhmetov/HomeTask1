@@ -8,7 +8,7 @@ import com.geekbrain.myapplication.room.CityDao
 import com.geekbrain.myapplication.room.CityEntity
 import com.geekbrain.myapplication.room.RequestEntity
 
-private const val TAG = "LocalRepositoryImpl"
+private const val TAG = "localRepositoryImpl"
 
 class LocalRepositoryImpl(private val localDaoSource: CityDao,
                           val  listener : DBLoadListener) : LocalRepository {
@@ -23,6 +23,8 @@ class LocalRepositoryImpl(private val localDaoSource: CityDao,
     override fun getAllCitiesAsync() {
         val handler = Handler()
         Thread{
+            //localDaoSource.deleteLast(5)
+            Log.i(TAG, "getAllCitiesAsync: ${localDaoSource.all().size}")
             val cities = convertCityEntityToCity(localDaoSource.all())
             handler.post{
                 listener.onReceiveCitiesFromDB(cities)
